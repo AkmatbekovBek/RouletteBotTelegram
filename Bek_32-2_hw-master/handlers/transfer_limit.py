@@ -10,14 +10,23 @@ class TransferLimit:
         self.MAX_LIMIT = 10000
 
         # ID товара "Снятие лимита рулетки в группе" из магазина
-        self.UNLIMITED_TRANSFERS_ITEM_ID = 1
+        self.UNLIMITED_TRANSFERS_ITEM_ID = 3
 
     def has_unlimited_transfers(self, user_id: int) -> bool:
         """Проверяет, купил ли пользователь снятие лимита"""
         db = next(get_db())
         try:
             user_purchases = ShopRepository.get_user_purchases(db, user_id)
-            return self.UNLIMITED_TRANSFERS_ITEM_ID in user_purchases
+            print(f"🔍 ДЕТАЛЬНАЯ ПРОВЕРКА БЕЗЛИМИТА:")
+            print(f"   👤 Пользователь: {user_id}")
+            print(f"   🛍️ Все покупки: {user_purchases}")
+            print(f"   🔎 Ищем ID: {self.UNLIMITED_TRANSFERS_ITEM_ID}")
+            print(f"   📊 Тип данных: {type(user_purchases)}")
+
+            result = self.UNLIMITED_TRANSFERS_ITEM_ID in user_purchases
+            print(f"   ✅ Результат: {result}")
+
+            return result
         except Exception as e:
             print(f"❌ Ошибка проверки безлимитного статуса: {e}")
             return False
@@ -31,12 +40,19 @@ class TransferLimit:
         """
         db = next(get_db())
         try:
+            print(f"🔍 НАЧАЛО ПРОВЕРКИ СТАТИСТИКИ ДЛЯ {user_id}")
+
             # Если пользователь купил снятие лимита - возвращаем безлимитный доступ
-            if self.has_unlimited_transfers(user_id):
+            is_unlimited = self.has_unlimited_transfers(user_id)
+            print(f"   ♾️ Безлимитный статус: {is_unlimited}")
+
+            if is_unlimited:
+                print(f"   ✅ Пользователь {user_id} имеет безлимитный доступ")
                 return 0, float('inf'), True
 
             # Получаем переводы за последние 6 часов из БД
             transfers = TransferLimitRepository.get_user_transfers_last_6h(db, user_id)
+            print(f"   📊 Найдено транзакций: {len(transfers)}")
 
             total_sent = 0
             for transfer in transfers:
@@ -44,7 +60,8 @@ class TransferLimit:
 
             remaining_limit = max(0, self.MAX_LIMIT - total_sent)
 
-            print(f"📊 БД: {len(transfers)} транзакций за 6ч, переведено {total_sent}, осталось {remaining_limit}")
+            print(f"   💰 Итого переведено: {total_sent}")
+            print(f"   📈 Осталось лимита: {remaining_limit}")
             return total_sent, remaining_limit, False
 
         except Exception as e:
@@ -81,17 +98,24 @@ class TransferLimit:
         Возвращает: (can_transfer, error_message, remaining_limit, is_unlimited)
         """
         try:
+            print(f"🎯 ПРОВЕРКА ВОЗМОЖНОСТИ ПЕРЕВОДА:")
+            print(f"   👤 Пользователь: {user_id}")
+            print(f"   💰 Сумма: {amount}")
+
             total_sent, remaining_limit, is_unlimited = self.get_user_transfer_stats(user_id)
 
             if is_unlimited:
+                print(f"   ✅ БЕЗЛИМИТНЫЙ ДОСТУП - перевод разрешен")
                 return True, "", float('inf'), True
+
+            print(f"   📊 Проверка лимита: {total_sent} + {amount} <= {self.MAX_LIMIT}")
 
             if total_sent + amount > self.MAX_LIMIT:
                 error_msg = f"❌ Лимит на передачу {self.MAX_LIMIT} монет за {self.LIMIT_PERIOD_HOURS} часов. Вы еще можете передать: {remaining_limit}"
-                print(f"🚫 Превышен лимит: {total_sent} + {amount} > {self.MAX_LIMIT}")
+                print(f"   🚫 ПРЕВЫШЕНИЕ ЛИМИТА: {total_sent} + {amount} > {self.MAX_LIMIT}")
                 return False, error_msg, remaining_limit, False
 
-            print(f"✅ Лимит OK: {total_sent} + {amount} <= {self.MAX_LIMIT}")
+            print(f"   ✅ ЛИМИТ В ПОРЯДКЕ: {total_sent} + {amount} <= {self.MAX_LIMIT}")
             return True, "", remaining_limit, False
 
         except Exception as e:

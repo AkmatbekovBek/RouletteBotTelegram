@@ -1,3 +1,5 @@
+from venv import logger
+
 from aiogram.contrib.middlewares import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, update, select, func, desc
@@ -969,7 +971,7 @@ class ShopRepository:
             item_name=item_name,
             price=price,
             chat_id=chat_id,
-            purchased_at=datetime.now(),  # Исправлено на purchased_at
+            purchased_at=datetime.now(),
             expires_at=expires_at
         )
 
@@ -986,7 +988,15 @@ class ShopRepository:
             models.UserPurchase.item_id == item_id,
             models.UserPurchase.chat_id == chat_id
         ).first()
-        return purchase is not None
+
+        if not purchase:
+            return False
+
+        # Проверяем срок действия если есть
+        if purchase.expires_at:
+            return purchase.expires_at > datetime.now()
+
+        return True
 
     @staticmethod
     def get_user_purchases_in_chat(db: Session, user_id: int, chat_id: int) -> list:
@@ -1005,26 +1015,14 @@ class ShopRepository:
         )
 
         if chat_id is not None:
-            # Ищем покупки для конкретного чата
             query = query.filter(models.UserPurchase.chat_id == chat_id)
 
         purchases = query.all()
         return [purchase[0] for purchase in purchases]
 
-    @staticmethod
-    def get_roulette_limit_removal_purchases(db: Session, user_id: int, chat_id: int) -> list:
-        """Получает все покупки снятия лимита рулетки пользователя в чате"""
-        return db.query(models.UserPurchase).filter(
-            models.UserPurchase.user_id == user_id,
-            models.UserPurchase.chat_id == chat_id,
-            models.UserPurchase.item_id == 5  # ID товара "Снятие лимита рулетки"
-        ).all()
-
-    @staticmethod
-    def has_roulette_limit_removal(db: Session, user_id: int, chat_id: int) -> bool:
-        """Проверяет, есть ли у пользователя снятие лимита рулетки в этом чате"""
-        purchases = ShopRepository.get_roulette_limit_removal_purchases(db, user_id, chat_id)
-        return len(purchases) > 0
+    # УДАЛИТЕ ДУБЛИРУЮЩИЕСЯ МЕТОДЫ:
+    # has_roulette_limit_removal - используйте has_user_purchased_in_chat с item_id=5
+    # get_roulette_limit_removal_purchases - используйте get_user_purchases_in_chat с item_id=5
 
     @staticmethod
     def get_user_purchases_with_details(db, user_id: int):
@@ -1513,16 +1511,23 @@ class ChatStatsRepository:
             return {}
 
 
-from datetime import datetime
 
-# database/crud.py (добавьте в конец файла)
+from datetime import datetime
+# database/crud.py (исправленный класс BotStopRepository)
 class BotStopRepository:
     @staticmethod
     def create_block_record(db, user_id: int, blocked_user_id: int):
         """Создает запись о блокировке пользователя"""
-        from database.models import BotStop
-        from datetime import datetime
-        record = BotStop(
+        # Проверяем, существует ли уже такая запись
+        existing = db.query(models.BotStop).filter(
+            models.BotStop.user_id == user_id,
+            models.BotStop.blocked_user_id == blocked_user_id
+        ).first()
+
+        if existing:
+            return existing
+
+        record = models.BotStop(
             user_id=user_id,
             blocked_user_id=blocked_user_id,
             created_at=datetime.now()
@@ -1533,96 +1538,380 @@ class BotStopRepository:
     @staticmethod
     def get_block_record(db, user_id: int, blocked_user_id: int):
         """Получает запись о блокировке"""
-        from database.models import BotStop
-        return db.query(BotStop).filter(
-            BotStop.user_id == user_id,
-            BotStop.blocked_user_id == blocked_user_id
+        return db.query(models.BotStop).filter(
+            models.BotStop.user_id == user_id,
+            models.BotStop.blocked_user_id == blocked_user_id
         ).first()
 
     @staticmethod
     def delete_block_record(db, user_id: int, blocked_user_id: int):
         """Удаляет запись о блокировке"""
-        from database.models import BotStop
-        db.query(BotStop).filter(
-            BotStop.user_id == user_id,
-            BotStop.blocked_user_id == blocked_user_id
-        ).delete()
+        try:
+            # Сначала проверим, существует ли запись
+            existing = db.query(models.BotStop).filter(
+                models.BotStop.user_id == user_id,
+                models.BotStop.blocked_user_id == blocked_user_id
+            ).first()
+
+            if existing:
+                logger.info(f"🔍 BEFORE DELETE: Найдена запись {user_id} -> {blocked_user_id}")
+
+                # Удаляем запись
+                db.query(models.BotStop).filter(
+                    models.BotStop.user_id == user_id,
+                    models.BotStop.blocked_user_id == blocked_user_id
+                ).delete()
+
+                # Проверяем что запись удалена
+                after_delete = db.query(models.BotStop).filter(
+                    models.BotStop.user_id == user_id,
+                    models.BotStop.blocked_user_id == blocked_user_id
+                ).first()
+
+                if after_delete is None:
+                    logger.info(f"✅ DELETE SUCCESS: Запись {user_id} -> {blocked_user_id} удалена")
+                else:
+                    logger.error(f"❌ DELETE FAILED: Запись {user_id} -> {blocked_user_id} все еще существует!")
+            else:
+                logger.warning(f"⚠️ DELETE: Запись {user_id} -> {blocked_user_id} не найдена")
+
+        except Exception as e:
+            logger.error(f"❌ DELETE ERROR: Ошибка удаления записи {user_id} -> {blocked_user_id}: {e}")
+            raise
 
     @staticmethod
-    def is_reply_blocked(db, user_id: int, replied_to_user_id: int) -> bool:
+    def is_reply_blocked(db, current_user_id: int, replied_to_user_id: int) -> bool:
         """
-        Проверяет, запрещено ли пользователю user_id отвечать
-        на сообщения пользователя replied_to_user_id
+        Проверяет, может ли current_user_id отвечать на сообщения replied_to_user_id
+        Возвращает True если ответ ЗАБЛОКИРОВАН
+
+        Правильная логика:
+        - user1 использует "бот стоп" на user2 → создается запись (user1, user2)
+        - Это означает: "user1 заблокировал user2"
+        - Когда user2 отвечает на user1 → проверяем: "user1 заблокировал user2?" = ДА → удаляем
         """
-        from database.models import BotStop
-        record = db.query(BotStop).filter(
-            BotStop.user_id == replied_to_user_id,  # Владелец сообщения
-            BotStop.blocked_user_id == user_id      # Тот, кто пытается ответить
+        # Ищем запись где:
+        # user_id = replied_to_user_id (тот, на чье сообщение отвечают)
+        # blocked_user_id = current_user_id (тот, кто отвечает)
+        # Это означает: "replied_to_user_id заблокировал current_user_id"
+        record = db.query(models.BotStop).filter(
+            models.BotStop.user_id == replied_to_user_id,
+            models.BotStop.blocked_user_id == current_user_id
         ).first()
-        return record is not None
+
+        is_blocked = record is not None
+        logger.info(f"🔍 BLOCK CHECK: {replied_to_user_id} заблокировал {current_user_id} = {is_blocked}")
+        return is_blocked
 
 
-# database/crud.py (исправленный класс BotSearchRepository)
+# database/crud.py (УЛУЧШЕННЫЙ класс BotSearchRepository)
 class BotSearchRepository:
     @staticmethod
     def add_user_chat(db, user_id: int, chat_id: int, chat_title: str):
-        """Добавляет чат пользователя в базу данных"""
+        """Добавляет или обновляет чат пользователя в базе данных"""
         from database.models import UserChatSearch
-        # Проверяем, существует ли уже такая запись
-        existing = db.query(UserChatSearch).filter(
-            UserChatSearch.user_id == user_id,
-            UserChatSearch.chat_id == chat_id
-        ).first()
+        try:
+            # Проверяем, существует ли уже такая запись
+            existing = db.query(UserChatSearch).filter(
+                UserChatSearch.user_id == user_id,
+                UserChatSearch.chat_id == chat_id
+            ).first()
 
-        if not existing:
-            record = UserChatSearch(
-                user_id=user_id,
-                chat_id=chat_id,
-                chat_title=chat_title
-            )
-            db.add(record)
+            if existing:
+                # Обновляем существующую запись
+                existing.chat_title = chat_title
+                existing.last_activity = datetime.now()
+                print(f"🔄 Обновлен чат пользователя {user_id}: {chat_title}")
+            else:
+                # Создаем новую запись
+                record = UserChatSearch(
+                    user_id=user_id,
+                    chat_id=chat_id,
+                    chat_title=chat_title,
+                    last_activity=datetime.now()
+                )
+                db.add(record)
+                print(f"✅ Добавлен новый чат пользователя {user_id}: {chat_title}")
+
+            db.commit()
+            return True
+        except Exception as e:
+            db.rollback()
+            print(f"❌ Ошибка добавления чата пользователя: {e}")
+            return False
 
     @staticmethod
     def add_user_nick(db, user_id: int, nick: str):
         """Добавляет ник пользователя в базу данных"""
         from database.models import UserNickSearch
-        # Проверяем, существует ли уже такая запись
-        existing = db.query(UserNickSearch).filter(
-            UserNickSearch.user_id == user_id,
-            UserNickSearch.nick == nick
-        ).first()
+        try:
+            # Очищаем ник от лишних пробелов
+            nick = ' '.join(nick.split()).strip()
 
-        if not existing:
-            record = UserNickSearch(
-                user_id=user_id,
-                nick=nick
-            )
-            db.add(record)
+            if not nick or len(nick) > 255:
+                return False
+
+            # Проверяем, существует ли уже такая запись
+            existing = db.query(UserNickSearch).filter(
+                UserNickSearch.user_id == user_id,
+                UserNickSearch.nick == nick
+            ).first()
+
+            if not existing:
+                record = UserNickSearch(
+                    user_id=user_id,
+                    nick=nick
+                )
+                db.add(record)
+                db.commit()
+                print(f"✅ Добавлен новый ник пользователя {user_id}: {nick}")
+                return True
+            return False
+        except Exception as e:
+            db.rollback()
+            print(f"❌ Ошибка добавления ника пользователя: {e}")
+            return False
 
     @staticmethod
-    def get_user_chats(db, user_id: int, limit: int = 30):
+    def get_user_chats(db, user_id: int, limit: int = 50):
         """Получает список чатов пользователя"""
         from database.models import UserChatSearch
         try:
-            chats = db.query(UserChatSearch.chat_title, UserChatSearch.chat_id).filter(
+            chats = db.query(
+                UserChatSearch.chat_title,
+                UserChatSearch.chat_id
+            ).filter(
                 UserChatSearch.user_id == user_id
-            ).order_by(UserChatSearch.id.desc()).limit(limit).all()
+            ).order_by(
+                UserChatSearch.last_activity.desc().nullslast(),
+                UserChatSearch.created_at.desc()
+            ).limit(limit).all()
             return [(chat_title, chat_id) for chat_title, chat_id in chats]
         except Exception as e:
             print(f"❌ Ошибка получения чатов пользователя: {e}")
             return []
 
     @staticmethod
-    def get_user_nicks(db, user_id: int, limit: int = 10):
+    def get_user_chats_with_activity(db, user_id: int, limit: int = 50):
+        """Получает чаты пользователя с информацией об активности"""
+        from database.models import UserChatSearch
+        try:
+            chats = db.query(
+                UserChatSearch.chat_title,
+                UserChatSearch.chat_id,
+                UserChatSearch.last_activity
+            ).filter(
+                UserChatSearch.user_id == user_id
+            ).order_by(
+                UserChatSearch.last_activity.desc().nullslast(),
+                UserChatSearch.created_at.desc()
+            ).limit(limit).all()
+            return chats
+        except Exception as e:
+            print(f"❌ Ошибка получения чатов с активностью: {e}")
+            return []
+
+    @staticmethod
+    def get_user_nicks(db, user_id: int, limit: int = 20):
         """Получает список ников пользователя"""
         from database.models import UserNickSearch
         try:
             nicks = db.query(UserNickSearch.nick).filter(
                 UserNickSearch.user_id == user_id
-            ).order_by(UserNickSearch.id.desc()).limit(limit).all()
+            ).order_by(UserNickSearch.created_at.desc()).limit(limit).all()
             return [nick for (nick,) in nicks]
         except Exception as e:
             print(f"❌ Ошибка получения ников пользователя: {e}")
+            return []
+
+    @staticmethod
+    def get_user_nicks_with_dates(db, user_id: int, limit: int = 20):
+        """Получает ники пользователя с датами"""
+        from database.models import UserNickSearch
+        try:
+            nicks = db.query(
+                UserNickSearch.nick,
+                UserNickSearch.created_at
+            ).filter(
+                UserNickSearch.user_id == user_id
+            ).order_by(
+                UserNickSearch.created_at.desc()
+            ).limit(limit).all()
+            return nicks
+        except Exception as e:
+            print(f"❌ Ошибка получения ников с датами: {e}")
+            return []
+
+    @staticmethod
+    def get_first_seen_date(db, user_id: int):
+        """Получает дату первого появления пользователя"""
+        from database.models import UserChatSearch
+        try:
+            result = db.query(
+                func.min(UserChatSearch.created_at)
+            ).filter(
+                UserChatSearch.user_id == user_id
+            ).scalar()
+            return result
+        except Exception as e:
+            print(f"❌ Ошибка получения даты первого появления: {e}")
+            return None
+
+    @staticmethod
+    def get_last_seen_date(db, user_id: int):
+        """Получает дату последней активности"""
+        from database.models import UserChatSearch
+        try:
+            # Сначала пытаемся получить по last_activity
+            result = db.query(
+                func.max(UserChatSearch.last_activity)
+            ).filter(
+                UserChatSearch.user_id == user_id
+            ).scalar()
+
+            if result:
+                return result
+
+            # Если нет last_activity, используем created_at
+            return db.query(
+                func.max(UserChatSearch.created_at)
+            ).filter(
+                UserChatSearch.user_id == user_id
+            ).scalar()
+        except Exception as e:
+            print(f"❌ Ошибка получения даты последней активности: {e}")
+            return None
+
+    @staticmethod
+    def get_user_command_count(db, user_id: int):
+        """Считает общее количество активностей пользователя"""
+        from database.models import UserChatSearch
+        try:
+            return db.query(UserChatSearch).filter(
+                UserChatSearch.user_id == user_id
+            ).count()
+        except Exception as e:
+            print(f"❌ Ошибка получения количества активностей: {e}")
+            return 0
+
+    @staticmethod
+    def cleanup_old_data(db, days_old: int = 30):
+        """Очищает старые данные поиска"""
+        from database.models import UserChatSearch, UserNickSearch
+        try:
+            cutoff_date = datetime.now() - timedelta(days=days_old)
+
+            # Удаляем старые записи чатов
+            deleted_chats = db.query(UserChatSearch).filter(
+                UserChatSearch.last_activity < cutoff_date
+            ).delete()
+
+            # Удаляем старые записи ников
+            deleted_nicks = db.query(UserNickSearch).filter(
+                UserNickSearch.created_at < cutoff_date
+            ).delete()
+
+            db.commit()
+            print(f"✅ Очищено данных поиска: {deleted_chats} чатов, {deleted_nicks} ников")
+            return {'chats': deleted_chats, 'nicks': deleted_nicks}
+        except Exception as e:
+            db.rollback()
+            print(f"❌ Ошибка очистки старых данных: {e}")
+            return {'chats': 0, 'nicks': 0}
+
+    @staticmethod
+    def get_user_search_stats(db, user_id: int):
+        """Получает статистику поиска по пользователю"""
+        from database.models import UserChatSearch, UserNickSearch
+        try:
+            # Количество чатов
+            chats_count = db.query(UserChatSearch).filter(
+                UserChatSearch.user_id == user_id
+            ).count()
+
+            # Количество ников
+            nicks_count = db.query(UserNickSearch).filter(
+                UserNickSearch.user_id == user_id
+            ).count()
+
+            # Дата первого появления
+            first_seen = BotSearchRepository.get_first_seen_date(db, user_id)
+
+            # Дата последней активности
+            last_seen = BotSearchRepository.get_last_seen_date(db, user_id)
+
+            return {
+                'chats_count': chats_count,
+                'nicks_count': nicks_count,
+                'first_seen': first_seen,
+                'last_seen': last_seen,
+                'total_activities': BotSearchRepository.get_user_command_count(db, user_id)
+            }
+        except Exception as e:
+            print(f"❌ Ошибка получения статистики поиска: {e}")
+            return {
+                'chats_count': 0,
+                'nicks_count': 0,
+                'first_seen': None,
+                'last_seen': None,
+                'total_activities': 0
+            }
+
+    @staticmethod
+    def log_user_activity(db, user_id: int, chat_id: int, chat_title: str, nick: str):
+        """Комплексное логирование активности пользователя"""
+        try:
+            # Логируем чат
+            chat_success = BotSearchRepository.add_user_chat(db, user_id, chat_id, chat_title)
+
+            # Логируем ник
+            nick_success = BotSearchRepository.add_user_nick(db, user_id, nick)
+
+            return {
+                'chat_logged': chat_success,
+                'nick_logged': nick_success,
+                'timestamp': datetime.now()
+            }
+        except Exception as e:
+            print(f"❌ Ошибка логирования активности: {e}")
+            return {
+                'chat_logged': False,
+                'nick_logged': False,
+                'timestamp': datetime.now()
+            }
+
+    @staticmethod
+    def search_users_by_nick(db, search_term: str, limit: int = 20):
+        """Ищет пользователей по нику"""
+        from database.models import UserNickSearch
+        try:
+            search_pattern = f"%{search_term}%"
+            results = db.query(
+                UserNickSearch.user_id,
+                UserNickSearch.nick
+            ).filter(
+                UserNickSearch.nick.ilike(search_pattern)
+            ).distinct().limit(limit).all()
+
+            return [(user_id, nick) for user_id, nick in results]
+        except Exception as e:
+            print(f"❌ Ошибка поиска пользователей по нику: {e}")
+            return []
+
+    @staticmethod
+    def get_chat_users(db, chat_id: int, limit: int = 50):
+        """Получает пользователей из конкретного чата"""
+        from database.models import UserChatSearch
+        try:
+            users = db.query(
+                UserChatSearch.user_id
+            ).filter(
+                UserChatSearch.chat_id == chat_id
+            ).distinct().limit(limit).all()
+
+            return [user_id for (user_id,) in users]
+        except Exception as e:
+            print(f"❌ Ошибка получения пользователей чата: {e}")
             return []
 
 # database/crud.py (добавьте в конец файла)
@@ -1738,6 +2027,7 @@ class ThiefRepository:
 
 # database/crud.py
 class PoliceRepository:
+
 
     @staticmethod
     def get_user_arrest(db, user_id: int):
@@ -1896,3 +2186,21 @@ class DonateRepository:
         except Exception as e:
             print(f"❌ Ошибка получения активных донат-покупок: {e}")
             return []
+
+
+class TelegramUserRepository:
+    @staticmethod
+    def get_user_by_id(db, user_id: int):
+        """Получает пользователя по ID"""
+        return db.execute(
+            "SELECT * FROM telegram_users WHERE user_id = ?",
+            (user_id,)
+        ).fetchone()
+
+    @staticmethod
+    def create_user(db, user_id: int, username: str = None, first_name: str = None, last_name: str = None):
+        """Создает нового пользователя"""
+        db.execute(
+            "INSERT INTO telegram_users (user_id, username, first_name, last_name, created_at) VALUES (?, ?, ?, ?, datetime('now'))",
+            (user_id, username, first_name, last_name)
+        )

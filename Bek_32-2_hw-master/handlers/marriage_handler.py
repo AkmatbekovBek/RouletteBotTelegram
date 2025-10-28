@@ -7,7 +7,7 @@ from database import get_db
 
 
 class MarriageHandler:
-    """Professional Marriage System with Enhanced UX"""
+    """Professional Marriage System with Group-Specific Marriages"""
 
     def __init__(self):
         self.marriage_messages = {
@@ -34,8 +34,8 @@ class MarriageHandler:
                 "🌀 {respondent} ответил(а) отказом на предложение {proposer}\n✨ Каждому предначертан свой путь...",
             ],
             "already_married": [
-                "💍 <b>Вы уже в браке!</b>\n\nВы уже состоите в брачном союзе с {partner}.\n\n💔 Если хотите создать новый союз, сначала расторгните текущий брак командой:\n<code>/развод</code>",
-                "💞 <b>Брачный статус: занят</b>\n\nВаше сердце уже принадлежит {partner}.\n\n🌀 Для нового предложения необходимо:\n<code>/развод</code> → затем новое предложение",
+                "💍 <b>Вы уже в браке!</b>\n\nВы уже состоите в брачном союзе с {partner} в этой группе.\n\n💔 Если хотите создать новый союз, сначала расторгните текущий брак командой:\n<code>/развод</code>",
+                "💞 <b>Брачный статус: занят</b>\n\nВаше сердце уже принадлежит {partner} в этой группе.\n\n🌀 Для нового предложения необходимо:\n<code>/развод</code> → затем новое предложение",
             ]
         }
 
@@ -81,37 +81,60 @@ class MarriageHandler:
         safe_name = first_name.replace('<', '&lt;').replace('>', '&gt;')
         return f'<a href="tg://user?id={user_id}">{safe_name}</a>'
 
-    def _get_marriage_data(self, user_id: int) -> Optional[Tuple]:
-        """Get marriage data with error handling"""
+    def _get_marriage_data(self, user_id: int, chat_id: int) -> Optional[Tuple]:
+        """Get marriage data for specific chat with error handling"""
         db = next(get_db())
         try:
             from sqlalchemy import text
             result = db.execute(
                 text("""
-                     SELECT id, user1, user2, married_at
+                     SELECT id, user1, user2, married_at, chat_id
                      FROM marriages
-                     WHERE user1 = :user_id
-                        OR user2 = :user_id
+                     WHERE chat_id = :chat_id
+                       AND (user1 = :user_id OR user2 = :user_id)
                      """),
-                {"user_id": user_id}
+                {"user_id": user_id, "chat_id": chat_id}
             ).fetchone()
             return result
         except Exception as e:
-            print(f"Database error: {e}")
-            return None
+            print(f"Database error in _get_marriage_data: {e}")
+            # Fallback: попробуем без chat_id для обратной совместимости
+            try:
+                result = db.execute(
+                    text("""
+                         SELECT id, user1, user2, married_at
+                         FROM marriages
+                         WHERE (user1 = :user_id OR user2 = :user_id)
+                         """),
+                    {"user_id": user_id}
+                ).fetchone()
+                if result:
+                    # Добавляем chat_id как None для совместимости
+                    return result + (None,)
+                return None
+            except Exception as e2:
+                print(f"Fallback error: {e2}")
+                return None
         finally:
             db.close()
 
-    def _is_user_married(self, user_id: int) -> bool:
-        """Check if user is married"""
-        return self._get_marriage_data(user_id) is not None
+    def _is_user_married(self, user_id: int, chat_id: int) -> bool:
+        """Check if user is married in specific chat"""
+        return self._get_marriage_data(user_id, chat_id) is not None
 
-    def _get_partner_info(self, user_id: int) -> Tuple[Optional[int], Optional[datetime], Optional[int]]:
-        """Get partner information"""
-        marriage = self._get_marriage_data(user_id)
+    def _get_partner_info(self, user_id: int, chat_id: int) -> Tuple[Optional[int], Optional[datetime], Optional[int]]:
+        """Get partner information for specific chat"""
+        marriage = self._get_marriage_data(user_id, chat_id)
         if not marriage:
             return None, None, None
-        marriage_id, u1, u2, married_at = marriage
+
+        # Обрабатываем разные случаи возвращаемых данных
+        if len(marriage) == 4:  # Старая структура без chat_id
+            marriage_id, u1, u2, married_at = marriage
+            chat_id_from_db = None
+        else:  # Новая структура с chat_id
+            marriage_id, u1, u2, married_at, chat_id_from_db = marriage
+
         partner_id = u2 if u1 == user_id else u1
         return partner_id, married_at, marriage_id
 
@@ -128,9 +151,10 @@ class MarriageHandler:
     async def _validate_marriage_proposal(self, message: types.Message, target_id: int) -> Optional[str]:
         """Validate marriage proposal conditions"""
         proposer_id = message.from_user.id
+        chat_id = message.chat.id
 
-        if self._is_user_married(proposer_id):
-            partner_id, _, _ = self._get_partner_info(proposer_id)
+        if self._is_user_married(proposer_id, chat_id):
+            partner_id, _, _ = self._get_partner_info(proposer_id, chat_id)
             partner_link, _ = await self._get_user_display_info(message.bot, partner_id)
 
             already_married_msg = self._get_random_message(
@@ -142,28 +166,28 @@ class MarriageHandler:
         if proposer_id == target_id:
             return "🌀 Нельзя предложить брак самому себе."
 
-        if self._is_user_married(target_id):
-            return "💫 Этот пользователь уже нашел свою половинку."
+        if self._is_user_married(target_id, chat_id):
+            return "💫 Этот пользователь уже нашел свою половинку в этой группе."
 
         return None
 
     async def _store_divorce_request_context(self, requester_id: int, partner_id: int, chat_id: int, message_id: int):
         """Store divorce request context for group notifications"""
-        key = f"{requester_id}_{partner_id}"
+        key = f"{requester_id}_{partner_id}_{chat_id}"
         self.divorce_requests[key] = {
             'chat_id': chat_id,
             'message_id': message_id,
             'timestamp': datetime.now()
         }
 
-    async def _get_divorce_request_context(self, requester_id: int, partner_id: int):
+    async def _get_divorce_request_context(self, requester_id: int, partner_id: int, chat_id: int):
         """Get stored divorce request context"""
-        key = f"{requester_id}_{partner_id}"
+        key = f"{requester_id}_{partner_id}_{chat_id}"
         return self.divorce_requests.get(key)
 
-    async def _cleanup_divorce_request_context(self, requester_id: int, partner_id: int):
+    async def _cleanup_divorce_request_context(self, requester_id: int, partner_id: int, chat_id: int):
         """Clean up stored divorce request context"""
-        key = f"{requester_id}_{partner_id}"
+        key = f"{requester_id}_{partner_id}_{chat_id}"
         self.divorce_requests.pop(key, None)
 
     async def _send_group_divorce_notification(self, bot, chat_id: int, requester_link: str, partner_link: str):
@@ -186,9 +210,11 @@ class MarriageHandler:
     async def propose_marriage(self, message: types.Message):
         """💍 Handle marriage proposal with enhanced UX"""
 
-        # Check if user is already married (direct command)
-        if self._is_user_married(message.from_user.id):
-            partner_id, _, _ = self._get_partner_info(message.from_user.id)
+        chat_id = message.chat.id
+
+        # Check if user is already married in this chat (direct command)
+        if self._is_user_married(message.from_user.id, chat_id):
+            partner_id, _, _ = self._get_partner_info(message.from_user.id, chat_id)
             partner_link, _ = await self._get_user_display_info(message.bot, partner_id)
 
             already_married_msg = self._get_random_message(
@@ -204,7 +230,8 @@ class MarriageHandler:
                 "1. Найдите сообщение пользователя\n"
                 "2. Ответьте на него командой\n"
                 "3. Напишите <code>брак</code>\n\n"
-                "✨ И пусть судьба улыбнется вам!"
+                "✨ И пусть судьба улыбнется вам!\n\n"
+                f"💬 <i>Этот брак будет действовать только в этой группе</i>"
             )
             await message.reply(guidance, parse_mode="HTML")
             return
@@ -225,8 +252,13 @@ class MarriageHandler:
 
             # Final conflict check
             existing = db.execute(
-                text("SELECT id FROM marriages WHERE user1 IN (:u1, :u2) OR user2 IN (:u1, :u2)"),
-                {"u1": proposer.id, "u2": target.id}
+                text("""
+                     SELECT id
+                     FROM marriages
+                     WHERE chat_id = :chat_id
+                       AND (user1 IN (:u1, :u2) OR user2 IN (:u1, :u2))
+                     """),
+                {"u1": proposer.id, "u2": target.id, "chat_id": chat_id}
             ).fetchone()
 
             if existing:
@@ -242,11 +274,11 @@ class MarriageHandler:
             keyboard.row(
                 types.InlineKeyboardButton(
                     "💖 Принять судьбу",
-                    callback_data=f"marriage_accept_{proposer.id}_{target.id}"
+                    callback_data=f"marriage_accept_{proposer.id}_{target.id}_{chat_id}"
                 ),
                 types.InlineKeyboardButton(
                     "💔 Отказаться",
-                    callback_data=f"marriage_decline_{proposer.id}_{target.id}"
+                    callback_data=f"marriage_decline_{proposer.id}_{target.id}_{chat_id}"
                 )
             )
 
@@ -275,13 +307,14 @@ class MarriageHandler:
 
         try:
             data_parts = callback.data.split("_")
-            if len(data_parts) != 4:
+            if len(data_parts) != 5:
                 await callback.answer("Неверные данные", show_alert=True)
                 return
 
             action_type = data_parts[1]
             proposer_id = int(data_parts[2])
             target_id = int(data_parts[3])
+            chat_id = int(data_parts[4])
             respondent = callback.from_user
 
             if respondent.id != target_id:
@@ -299,8 +332,13 @@ class MarriageHandler:
                 if action_type == "accept":
                     # Final validation
                     conflict = db.execute(
-                        text("SELECT id FROM marriages WHERE user1 IN (:u1, :u2) OR user2 IN (:u1, :u2)"),
-                        {"u1": proposer_id, "u2": target_id}
+                        text("""
+                             SELECT id
+                             FROM marriages
+                             WHERE chat_id = :chat_id
+                               AND (user1 IN (:u1, :u2) OR user2 IN (:u1, :u2))
+                             """),
+                        {"u1": proposer_id, "u2": target_id, "chat_id": chat_id}
                     ).fetchone()
 
                     if conflict:
@@ -315,8 +353,11 @@ class MarriageHandler:
                     # Create marriage
                     marriage_time = datetime.now()
                     db.execute(
-                        text("INSERT INTO marriages (user1, user2, married_at) VALUES (:u1, :u2, :at)"),
-                        {"u1": proposer_id, "u2": target_id, "at": marriage_time}
+                        text("""
+                             INSERT INTO marriages (user1, user2, married_at, chat_id)
+                             VALUES (:u1, :u2, :at, :chat_id)
+                             """),
+                        {"u1": proposer_id, "u2": target_id, "at": marriage_time, "chat_id": chat_id}
                     )
                     db.commit()
 
@@ -338,7 +379,7 @@ class MarriageHandler:
                     try:
                         await callback.bot.send_message(
                             proposer_id,
-                            f"💞 {respondent_link} принял(а) ваше предложение!\n✨ Теперь вы в браке!",
+                            f"💞 {respondent_link} принял(а) ваше предложение!\n✨ Теперь вы в браке в этой группе!",
                             parse_mode="HTML"
                         )
                     except Exception:
@@ -382,25 +423,32 @@ class MarriageHandler:
             await callback.answer("Критическая ошибка", show_alert=True)
 
     async def list_marriages(self, message: types.Message):
-        """📊 Display marriages with enhanced design"""
+        """📊 Display marriages for current group with enhanced design"""
 
+        chat_id = message.chat.id
         db = next(get_db())
         try:
             from sqlalchemy import text
 
             marriages = db.execute(
-                text("SELECT user1, user2, married_at FROM marriages ORDER BY married_at DESC")
+                text("""
+                     SELECT user1, user2, married_at
+                     FROM marriages
+                     WHERE chat_id = :chat_id
+                     ORDER BY married_at DESC
+                     """),
+                {"chat_id": chat_id}
             ).fetchall()
 
             if not marriages:
                 await message.reply(
-                    "💫 <b>Пока тихо и пусто...</b>\nСтаньте первой парой, заключившей союз!",
+                    "💫 <b>Пока тихо и пусто...</b>\nСтаньте первой парой, заключившей союз в этой группе!",
                     parse_mode="HTML"
                 )
                 return
 
             total = len(marriages)
-            display_text = f"💞 <b>Счастливые пары</b>\n📊 Всего союзов: {total}\n\n"
+            display_text = f"💞 <b>Счастливые пары этой группы</b>\n📊 Всего союзов: {total}\n\n"
 
             for idx, (u1, u2, date) in enumerate(marriages, 1):
                 u1_link, _ = await self._get_user_display_info(message.bot, u1)
@@ -416,7 +464,7 @@ class MarriageHandler:
                     f"   📅 {date.strftime('%d.%m.%Y')}\n\n"
                 )
 
-            display_text += f"✨ Всего счастливых историй: {total}"
+            display_text += f"✨ Всего счастливых историй в этой группе: {total}"
 
             await message.reply(display_text, parse_mode="HTML")
 
@@ -427,19 +475,25 @@ class MarriageHandler:
             db.close()
 
     async def my_marriage(self, message: types.Message):
-        """👰🤵 Display user's marriage info"""
+        """👰🤵 Display user's marriage info for current group"""
 
         user_id = message.from_user.id
-        marriage = self._get_marriage_data(user_id)
+        chat_id = message.chat.id
+        marriage = self._get_marriage_data(user_id, chat_id)
 
         if not marriage:
             await message.reply(
-                "💫 <b>Вы свободны как ветер</b>\nНайдите свою половинку и создайте союз!",
+                "💫 <b>Вы свободны как ветер</b>\nНайдите свою половинку и создайте союз в этой группе!",
                 parse_mode="HTML"
             )
             return
 
-        _, u1, u2, marriage_time = marriage
+        # Обрабатываем разные структуры данных
+        if len(marriage) == 4:  # Старая структура без chat_id
+            _, u1, u2, marriage_time = marriage
+        else:  # Новая структура с chat_id
+            _, u1, u2, marriage_time, _ = marriage
+
         partner_id = u2 if u1 == user_id else u1
 
         user_link, _ = await self._get_user_display_info(message.bot, user_id)
@@ -447,9 +501,9 @@ class MarriageHandler:
         duration = self._get_time_difference(marriage_time)
 
         status_messages = [
-            f"💞 <b>Ваш союз</b>\n\n{user_link} 💕 {partner_link}\n⏳ Вместе: {duration}\n📅 С: {marriage_time.strftime('%d.%m.%Y')}\n\n✨ Цените каждый момент!",
-            f"🌟 <b>Ваша история</b>\n\n{user_link} ❤️ {partner_link}\n🕰️ Союз длится: {duration}\n🗓️ Начало: {marriage_time.strftime('%d.%m.%Y')}\n\n💫 Пусть любовь только крепнет!",
-            f"💒 <b>Ваш брак</b>\n\n{user_link} ✨ {partner_link}\n⏱️ В браке: {duration}\n📆 С: {marriage_time.strftime('%d.%m.%Y')}\n\n🌈 Берегите ваш союз!"
+            f"💞 <b>Ваш союз в этой группе</b>\n\n{user_link} 💕 {partner_link}\n⏳ Вместе: {duration}\n📅 С: {marriage_time.strftime('%d.%m.%Y')}\n\n✨ Цените каждый момент!",
+            f"🌟 <b>Ваша история в этой группе</b>\n\n{user_link} ❤️ {partner_link}\n🕰️ Союз длится: {duration}\n🗓️ Начало: {marriage_time.strftime('%d.%m.%Y')}\n\n💫 Пусть любовь только крепнет!",
+            f"💒 <b>Ваш брак в этой группе</b>\n\n{user_link} ✨ {partner_link}\n⏱️ В браке: {duration}\n📆 С: {marriage_time.strftime('%d.%m.%Y')}\n\n🌈 Берегите ваш союз!"
         ]
 
         await message.reply(random.choice(status_messages), parse_mode="HTML")
@@ -458,24 +512,30 @@ class MarriageHandler:
         """💔 Handle divorce with enhanced flow"""
 
         user_id = message.from_user.id
+        chat_id = message.chat.id
 
-        if not self._is_user_married(user_id):
+        if not self._is_user_married(user_id, chat_id):
             await message.reply(
-                "💫 <b>Нечего расторгать</b>\nВы не состоите в браке.",
+                "💫 <b>Нечего расторгать</b>\nВы не состоите в браке в этой группе.",
                 parse_mode="HTML"
             )
             return
 
-        partner_id, marriage_time, _ = self._get_partner_info(user_id)
+        partner_id, marriage_time, _ = self._get_partner_info(user_id, chat_id)
 
         db = next(get_db())
         try:
             from sqlalchemy import text
 
-            # Check existing requests
+            # Check existing requests for this chat
             existing = db.execute(
-                text("SELECT id FROM divorce_requests WHERE requester = :uid OR partner = :uid"),
-                {"uid": user_id}
+                text("""
+                     SELECT id
+                     FROM divorce_requests
+                     WHERE chat_id = :chat_id
+                       AND (requester = :uid OR partner = :uid)
+                     """),
+                {"uid": user_id, "chat_id": chat_id}
             ).fetchone()
 
             if existing:
@@ -490,8 +550,11 @@ class MarriageHandler:
 
             # Create divorce request
             db.execute(
-                text("INSERT INTO divorce_requests (requester, partner, requested_at) VALUES (:r, :p, :at)"),
-                {"r": user_id, "p": partner_id, "at": datetime.now()}
+                text("""
+                     INSERT INTO divorce_requests (requester, partner, requested_at, chat_id)
+                     VALUES (:r, :p, :at, :chat_id)
+                     """),
+                {"r": user_id, "p": partner_id, "at": datetime.now(), "chat_id": chat_id}
             )
             db.commit()
 
@@ -499,7 +562,7 @@ class MarriageHandler:
             await self._store_divorce_request_context(
                 user_id,
                 partner_id,
-                message.chat.id,
+                chat_id,
                 message.message_id
             )
 
@@ -508,11 +571,11 @@ class MarriageHandler:
             keyboard.row(
                 types.InlineKeyboardButton(
                     "💔 Подтвердить развод",
-                    callback_data=f"divorce_yes_{user_id}_{partner_id}"
+                    callback_data=f"divorce_yes_{user_id}_{partner_id}_{chat_id}"
                 ),
                 types.InlineKeyboardButton(
                     "💖 Сохранить брак",
-                    callback_data=f"divorce_no_{user_id}_{partner_id}"
+                    callback_data=f"divorce_no_{user_id}_{partner_id}_{chat_id}"
                 )
             )
 
@@ -544,11 +607,17 @@ class MarriageHandler:
                 )
                 # Cleanup
                 db.execute(
-                    text("DELETE FROM divorce_requests WHERE requester = :r AND partner = :p"),
-                    {"r": user_id, "p": partner_id}
+                    text("""
+                         DELETE
+                         FROM divorce_requests
+                         WHERE requester = :r
+                           AND partner = :p
+                           AND chat_id = :chat_id
+                         """),
+                    {"r": user_id, "p": partner_id, "chat_id": chat_id}
                 )
                 db.commit()
-                await self._cleanup_divorce_request_context(user_id, partner_id)
+                await self._cleanup_divorce_request_context(user_id, partner_id, chat_id)
 
         except Exception as e:
             print(f"Divorce request error: {e}")
@@ -561,13 +630,14 @@ class MarriageHandler:
 
         try:
             data_parts = callback.data.split("_")
-            if len(data_parts) != 4:
+            if len(data_parts) != 5:
                 await callback.answer("Неверные данные", show_alert=True)
                 return
 
             response_type = data_parts[1]
             requester_id = int(data_parts[2])
             partner_id = int(data_parts[3])
+            chat_id = int(data_parts[4])
             respondent = callback.from_user
 
             if respondent.id != partner_id:
@@ -578,10 +648,16 @@ class MarriageHandler:
             try:
                 from sqlalchemy import text
 
-                # Validate request
+                # Validate request for this chat
                 divorce_req = db.execute(
-                    text("SELECT id FROM divorce_requests WHERE requester = :r AND partner = :p"),
-                    {"r": requester_id, "p": partner_id}
+                    text("""
+                         SELECT id
+                         FROM divorce_requests
+                         WHERE requester = :r
+                           AND partner = :p
+                           AND chat_id = :chat_id
+                         """),
+                    {"r": requester_id, "p": partner_id, "chat_id": chat_id}
                 ).fetchone()
 
                 if not divorce_req:
@@ -592,10 +668,15 @@ class MarriageHandler:
                 respondent_link, _ = await self._get_user_display_info(callback.bot, respondent.id)
 
                 if response_type == "yes":
-                    # Process divorce
+                    # Process divorce for this chat
                     db.execute(
-                        text("DELETE FROM marriages WHERE (user1 = :u1 AND user2 = :u2) OR (user1 = :u2 AND user2 = :u1)"),
-                        {"u1": requester_id, "u2": partner_id}
+                        text("""
+                             DELETE
+                             FROM marriages
+                             WHERE chat_id = :chat_id
+                               AND ((user1 = :u1 AND user2 = :u2) OR (user1 = :u2 AND user2 = :u1))
+                             """),
+                        {"u1": requester_id, "u2": partner_id, "chat_id": chat_id}
                     )
                     db.execute(
                         text("DELETE FROM divorce_requests WHERE id = :id"),
@@ -604,7 +685,7 @@ class MarriageHandler:
                     db.commit()
 
                     # Get stored group chat context
-                    group_context = await self._get_divorce_request_context(requester_id, partner_id)
+                    group_context = await self._get_divorce_request_context(requester_id, partner_id, chat_id)
 
                     # Send notification to original group chat if available
                     if group_context:
@@ -632,14 +713,14 @@ class MarriageHandler:
                     try:
                         await callback.bot.send_message(
                             requester_id,
-                            f"💔 {respondent_link} подтвердил(а) развод\n🕊️ Брак расторгнут.",
+                            f"💔 {respondent_link} подтвердил(а) развод\n🕊️ Брак в этой группе расторгнут.",
                             parse_mode="HTML"
                         )
                     except Exception:
                         pass
 
                     # Cleanup stored context
-                    await self._cleanup_divorce_request_context(requester_id, partner_id)
+                    await self._cleanup_divorce_request_context(requester_id, partner_id, chat_id)
 
                     await callback.answer("💔 Брак расторгнут", show_alert=True)
 
@@ -651,10 +732,10 @@ class MarriageHandler:
                     db.commit()
 
                     # Cleanup stored context
-                    await self._cleanup_divorce_request_context(requester_id, partner_id)
+                    await self._cleanup_divorce_request_context(requester_id, partner_id, chat_id)
 
                     await callback.message.edit_text(
-                        "💖 <b>Брак сохранен</b>\nВы сохранили ваш союз!",
+                        "💖 <b>Брак сохранен</b>\nВы сохранили ваш союз в этой группе!",
                         reply_markup=None,
                         parse_mode="HTML"
                     )
@@ -718,4 +799,4 @@ def register_marriage_handlers(dp: Dispatcher):
         lambda c: c.data and c.data.startswith(("divorce_yes_", "divorce_no_"))
     )
 
-    print("💍 Marriage System: Clean Edition Activated")
+    print("💍 Marriage System: Group-Specific Edition Activated")

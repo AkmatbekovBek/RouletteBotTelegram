@@ -119,13 +119,13 @@ class ShopHandler:
             text += f"• {item['description']}\n"
 
         # Информация о покупках
-        if user_id and chat_id:
+        if user_id:
             with self._db_session() as db:
                 try:
-                    user_purchases = ShopRepository.get_user_purchases_in_chat(db, user_id, chat_id)
-                    if user_purchases:
-                        text += "\n🛒 <b>Ваши покупки в этом чате:</b>\n"
-                        for item_id in user_purchases:
+                    active_purchases = ShopRepository.get_active_purchases(db, user_id)
+                    if active_purchases:
+                        text += "\n🛒 <b>Ваши активные привилегии:</b>\n"
+                        for item_id in active_purchases:
                             item = ITEM_IDS.get(item_id)
                             if item:
                                 text += f"✅ {item['name']}\n"
@@ -170,7 +170,7 @@ class ShopHandler:
                 await self._handle_purchase(callback, user_id, chat_id)
             elif action.startswith("shop_already_bought_"):
                 await self._handle_already_purchased(callback)
-            elif action.startswith("shop_already_active_"):  # Добавьте эту строку
+            elif action.startswith("shop_already_active_"):
                 await self._handle_already_active(callback)
             elif action == "shop_gifts":
                 await self._handle_gifts_section(callback)
@@ -207,17 +207,11 @@ class ShopHandler:
                     await callback.answer()
                     return
 
-                # ВТОРАЯ ПРОВЕРКА: Проверяем, не куплен ли уже товар в этом чате
-                if ShopRepository.has_user_purchased_in_chat(db, user_id, item_id, chat_id):
-                    await callback.message.edit_text(
-                        f"❌ <b>Этот товар уже куплен в этом чате!</b>\n\n"
-                        f"📦 Товар: {item['name']}\n\n"
-                        f"Вы уже приобрели этот товар в этом чате ранее.",
-                        reply_markup=self._get_back_keyboard(),
-                        parse_mode="HTML"
-                    )
-                    await callback.answer()
-                    return
+                # ИСПРАВЛЕНИЕ: Для товаров защиты НЕ проверяем привязку к чату
+                # Защита должна работать глобально во всех чатах
+                if item_id in [4, 5, 6]:  # Товары защиты
+                    # Только информируем пользователя
+                    self.logger.info(f"🛒 ПОКУПКА ГЛОБАЛЬНОЙ ЗАЩИТЫ: user_id={user_id}, item_id={item_id}")
 
                 # Получаем пользователя и проверяем баланс
                 user = UserRepository.get_user_by_telegram_id(db, user_id)
@@ -235,9 +229,15 @@ class ShopHandler:
                 if user_balance >= item["price"]:
                     # Совершаем покупку
                     user.coins -= item["price"]
+
+                    # ВАЖНОЕ ИСПРАВЛЕНИЕ: Для товаров защиты используем chat_id = 0 (глобальная)
+                    # Для других товаров также используем глобальный подход
+                    purchase_chat_id = 0  # 0 означает глобальная покупка для всех чатов
+
                     ShopRepository.add_user_purchase(
-                        db, user_id, item_id, item["name"], item["price"], chat_id
+                        db, user_id, item_id, item["name"], item["price"], purchase_chat_id
                     )
+
                     db.commit()
 
                     # Формируем сообщение об успехе
@@ -247,8 +247,13 @@ class ShopHandler:
                         f"💰 Стоимость: {item['price_display']}\n"
                         f"💳 Списано: {item['price_display']}\n\n"
                         f"{item['benefit']}\n\n"
-                        f"💎 Новый баланс: {self._format_number(user.coins)} монет"
                     )
+
+                    # Добавляем информацию о глобальности для защиты
+                    if item_id in [4, 5, 6]:
+                        success_text += "🌍 <b>Эта защита действует во всех чатах!</b>\n\n"
+
+                    success_text += f"💎 Новый баланс: {self._format_number(user.coins)} монет"
 
                     await callback.message.edit_text(
                         success_text,
@@ -256,7 +261,7 @@ class ShopHandler:
                         parse_mode="HTML"
                     )
 
-                    self.logger.info(f"User {user_id} purchased item {item_id} in chat {chat_id}")
+                    self.logger.info(f"User {user_id} purchased GLOBAL item {item_id}")
 
                 else:
                     # Недостаточно средств
@@ -385,11 +390,15 @@ class ShopHandler:
                         else:
                             expires_text = "\n⏰ Действует бессрочно"
 
+                        protection_info = ""
+                        if item_id in [4, 5, 6]:
+                            protection_info = "\n🌍 <b>Действует во всех чатах!</b>"
+
                         await callback.message.edit_text(
                             f"✅ <b>Привилегия активна</b>\n\n"
                             f"📦 Товар: {item['name']}\n"
                             f"🛒 Куплено: {purchase.purchased_at.strftime('%d.%m.%Y %H:%M')}"
-                            f"{expires_text}\n\n"
+                            f"{expires_text}{protection_info}\n\n"
                             f"🎯 <b>Преимущество:</b>\n"
                             f"{item['benefit']}",
                             reply_markup=self._get_back_keyboard(),
@@ -471,4 +480,4 @@ def register_shop_handlers(dp: Dispatcher):
         state="*"
     )
 
-    logging.info("✅ Магазин обработчики зарегистрированы (с защитой от повторных покупок)")
+    logging.info("✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)")

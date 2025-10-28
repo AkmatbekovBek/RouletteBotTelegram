@@ -4,6 +4,10 @@ import re
 import time
 import logging
 from typing import Optional, Dict, List, Tuple
+from datetime import datetime, timedelta
+import json
+import os
+
 from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters import Command
 from aiogram.utils.exceptions import (
@@ -14,20 +18,18 @@ from aiogram.utils.exceptions import (
     BotKicked,
     BotBlocked
 )
-from datetime import datetime, timedelta
-import json
-import os
 
 from database import get_db
-from database.crud import UserRepository
+from database.crud import UserRepository, ShopRepository
+from database.models import UserPurchase
 
 # Файлы для хранения активных мутов/банов
 MUTE_STORAGE_FILE = "active_mutes.json"
 BAN_STORAGE_FILE = "active_bans.json"
-BOT_BAN_STORAGE_FILE = "bot_bans.json"  # Новый файл для банов в боте
+BOT_BAN_STORAGE_FILE = "bot_bans.json"
 
-# Список ID администраторов (должен совпадать с admin.py)
-ADMIN_IDS = [1054684037]  # Замените на реальные ID админов
+# Список ID администраторов
+ADMIN_IDS = [1054684037]
 
 
 class BotBanManager:
@@ -38,7 +40,7 @@ class BotBanManager:
         self.logger = logging.getLogger(__name__)
         self.bot_bans = self._load_bot_bans()
         self.cleanup_task = None
-        self.middleware = None  # Будет установлено позже
+        self.middleware = None
 
     def set_middleware(self, middleware):
         """Устанавливает ссылку на middleware для отправки уведомлений"""
@@ -69,14 +71,11 @@ class BotBanManager:
         try:
             user_id_str = str(user_id)
 
-            # Проверяем в активных банах
             if user_id_str in self.bot_bans:
                 ban_data = self.bot_bans[user_id_str]
                 expires_at = ban_data.get('expires_at')
 
-                # Если бан временный и время истекло
                 if expires_at and time.time() > expires_at:
-                    # Удаляем истекший бан
                     del self.bot_bans[user_id_str]
                     self._save_bot_bans()
                     self.logger.info(f"✅ Автоочистка истекшего бана для пользователя {user_id}")
@@ -104,9 +103,23 @@ class BotBanManager:
             }
 
             if seconds:
+                if seconds <= 0:
+                    self.logger.error(f"Invalid seconds value: {seconds}")
+                    return False
+
+                max_seconds = 315360000
+                if seconds > max_seconds:
+                    seconds = max_seconds
+
                 ban_data['expires_at'] = time.time() + seconds
-                ban_data['expires_at_text'] = (datetime.now() + timedelta(seconds=seconds)).strftime(
-                    "%Y-%m-%d %H:%M:%S")
+
+                try:
+                    expire_date = datetime.now() + timedelta(seconds=seconds)
+                    ban_data['expires_at_text'] = expire_date.strftime("%Y-%m-%d %H:%M:%S")
+                except (ValueError, OverflowError) as e:
+                    self.logger.error(f"Error creating expire date text: {e}")
+                    default_expire = datetime.now() + timedelta(days=365)
+                    ban_data['expires_at_text'] = default_expire.strftime("%Y-%m-%d %H:%M:%S")
 
             self.bot_bans[user_id_str] = ban_data
             self._save_bot_bans()
@@ -127,7 +140,6 @@ class BotBanManager:
                 del self.bot_bans[user_id_str]
                 self._save_bot_bans()
 
-                # Уведомляем middleware о ручном разбане
                 if self.middleware:
                     self.middleware.add_recently_unbanned(user_id)
                     self.logger.info(f"Notified middleware about manual unban for user {user_id}")
@@ -178,20 +190,18 @@ class BotBanManager:
                         expired_bans.append(user_id_str)
                         self.logger.info(f"Auto-removed expired bot ban for user {user_id_str}")
 
-                        # Уведомляем middleware о разбане
                         if self.middleware:
                             user_id = int(user_id_str)
                             self.middleware.add_recently_unbanned(user_id)
                             self.logger.info(f"Notified middleware about unban for user {user_id}")
 
-                # Удаляем истекшие баны
                 for user_id_str in expired_bans:
                     del self.bot_bans[user_id_str]
 
                 if expired_bans:
                     self._save_bot_bans()
 
-                await asyncio.sleep(60)  # Проверяем каждую минуту
+                await asyncio.sleep(60)
 
             except asyncio.CancelledError:
                 break
@@ -209,7 +219,6 @@ class BotBanManager:
         for user_id_str, ban_data in list(self.bot_bans.items()):
             expires_at = ban_data.get('expires_at')
             if expires_at and current_time > expires_at:
-                # Удаляем истекшие баны
                 del self.bot_bans[user_id_str]
                 expired_count += 1
 
@@ -222,7 +231,7 @@ class BotBanManager:
 
 
 class MuteBanManager:
-    """Менеджер для управления мутами и банами с проверками безопасности"""
+    """Менеджер для управления мутами и банами с упрощенными командами"""
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -278,11 +287,9 @@ class MuteBanManager:
     async def _is_user_admin(self, user_id: int, chat_id: int = None, bot=None) -> bool:
         """Проверяет, является ли пользователь администратором"""
         try:
-            # Проверяем основные админы
             if user_id in ADMIN_IDS:
                 return True
 
-            # Проверяем админов из БД
             db = self._get_db_session()
             try:
                 user = UserRepository.get_user_by_telegram_id(db, user_id)
@@ -293,7 +300,6 @@ class MuteBanManager:
             finally:
                 db.close()
 
-            # Проверяем, является ли пользователь админом чата
             if chat_id and bot:
                 try:
                     member = await bot.get_chat_member(chat_id, user_id)
@@ -306,6 +312,57 @@ class MuteBanManager:
             self.logger.error(f"Error in _is_user_admin: {e}")
             return False
 
+    def has_mute_protection(self, user_id: int, chat_id: int) -> bool:
+        """Проверяет, есть ли у пользователя защита от мутов - ГЛОБАЛЬНАЯ ВЕРСИЯ"""
+        db = next(get_db())
+        try:
+            print(f"🔍 ДЕТАЛЬНАЯ ПРОВЕРКА ЗАЩИТЫ ОТ МУТОВ:")
+            print(f"   👤 Пользователь: {user_id}")
+            print(f"   💬 Чат: {chat_id}")
+
+            # ID товаров защиты от мутов
+            PROTECTION_ITEM_IDS = [6]  # ID товара "🚫🙊 Защита от !!мут и !бот стоп"
+
+            # Способ 1: Проверка через has_active_purchase (глобальная)
+            for item_id in PROTECTION_ITEM_IDS:
+                if ShopRepository.has_active_purchase(db, user_id, item_id):
+                    print(f"   ✅ Способ 1: Глобальная защита (товар {item_id})")
+                    return True
+
+            # Способ 2: Проверка через get_active_purchases
+            active_purchases = ShopRepository.get_active_purchases(db, user_id)
+            print(f"   🛍️ Все активные покупки: {active_purchases}")
+
+            for item_id in PROTECTION_ITEM_IDS:
+                if item_id in active_purchases:
+                    print(f"   ✅ Способ 2: Защита через активные покупки (товар {item_id})")
+                    return True
+
+            # Способ 3: Прямая проверка в базе данных (глобальная)
+            current_time = datetime.now()
+            protection_purchases = db.query(UserPurchase).filter(
+                UserPurchase.user_id == user_id,
+                UserPurchase.item_id.in_(PROTECTION_ITEM_IDS)
+                # Убрана проверка chat_id - защита глобальная
+            ).all()
+
+            print(f"   📊 Найдено покупок защиты: {len(protection_purchases)}")
+
+            for purchase in protection_purchases:
+                print(f"   🛒 Покупка: item_id={purchase.item_id}, expires_at={purchase.expires_at}")
+                if purchase.expires_at is None or purchase.expires_at > current_time:
+                    print(f"   ✅ Способ 3: Активная глобальная защита (товар {purchase.item_id})")
+                    return True
+
+            print(f"   ❌ Все способы проверки: ЗАЩИТЫ НЕТ")
+            return False
+
+        except Exception as e:
+            print(f"❌ Ошибка детальной проверки защиты: {e}")
+            return False
+        finally:
+            db.close()
+
     async def _check_admin(self, message: types.Message) -> bool:
         """Проверяет, является ли пользователь администратором"""
         try:
@@ -314,65 +371,34 @@ class MuteBanManager:
             if await self._is_user_admin(user_id, message.chat.id if message.chat else None, message.bot):
                 return True
 
-            # Не отправляем сообщение если бот не может писать в чат
-            try:
-                await message.answer("❌ У вас нет прав администратора")
-            except BadRequest:
-                pass  # Бот не может писать в чат
             return False
         except Exception as e:
             self.logger.error(f"Error in _check_admin: {e}")
             return False
 
     async def _check_bot_permissions(self, message: types.Message) -> bool:
-        """Проверяет права бота в чате с улучшенной обработкой ошибок"""
+        """Проверяет права бота в чате"""
         try:
-            # Если это личные сообщения с ботом, пропускаем проверку
             if message.chat.type == 'private':
                 return True
 
             bot_member = await message.bot.get_chat_member(message.chat.id, message.bot.id)
 
-            # Проверяем различные статусы бота
             if bot_member.status == 'restricted':
-                # Бот ограничен в правах
                 if hasattr(bot_member, 'can_send_messages') and not bot_member.can_send_messages:
-                    self.logger.warning(f"❌ Бот не может отправлять сообщения в чате {message.chat.id}")
                     return False
                 if hasattr(bot_member, 'can_restrict_members') and not bot_member.can_restrict_members:
-                    self.logger.warning(f"❌ Бот не может ограничивать пользователей в чате {message.chat.id}")
                     return False
                 return True
             elif bot_member.status == 'administrator':
-                # Бот - администратор
                 if not bot_member.can_restrict_members:
-                    try:
-                        await message.answer("❌ У бота нет прав для ограничения пользователей")
-                    except BadRequest:
-                        pass
                     return False
                 return True
             elif bot_member.status == 'left' or bot_member.status == 'kicked':
-                # Бот вышел из чата или был кикнут
-                self.logger.warning(f"❌ Бот не является участником чата {message.chat.id}")
                 return False
             else:
-                # Бот обычный участник
-                try:
-                    await message.answer("❌ Бот не является администратором чата")
-                except BadRequest:
-                    pass
                 return False
 
-        except BotKicked:
-            self.logger.warning(f"❌ Бот был кикнут из чата {message.chat.id}")
-            return False
-        except BotBlocked:
-            self.logger.warning(f"❌ Бот заблокирован в чате {message.chat.id}")
-            return False
-        except BadRequest as e:
-            self.logger.error(f"BadRequest checking bot permissions: {e}")
-            return False
         except Exception as e:
             self.logger.error(f"Error checking bot permissions: {e}")
             return False
@@ -381,17 +407,9 @@ class MuteBanManager:
         """Получает целевого пользователя из reply сообщения"""
         try:
             if not message.reply_to_message:
-                try:
-                    await message.answer("❌ Ответьте на сообщение пользователя, чтобы выполнить действие")
-                except BadRequest:
-                    pass
                 return None
 
             if not message.reply_to_message.from_user:
-                try:
-                    await message.answer("❌ Не удалось определить пользователя")
-                except BadRequest:
-                    pass
                 return None
 
             return message.reply_to_message.from_user
@@ -399,44 +417,28 @@ class MuteBanManager:
             self.logger.error(f"Error getting target user: {e}")
             return None
 
-    async def _get_target_user_id_from_args(self, message: types.Message) -> Optional[int]:
-        """Получает ID пользователя из аргументов команды"""
-        try:
-            args = message.get_args().split()
-            if not args:
-                return None
-
-            try:
-                return int(args[0])
-            except ValueError:
-                return None
-
-        except Exception as e:
-            self.logger.error(f"Error getting user id from args: {e}")
-            return None
-
     async def _check_target_is_admin(self, message: types.Message, user_id: int) -> bool:
         """Проверяет, является ли целевой пользователь администратором"""
         try:
-            # Нельзя мутить/банить самого себя
+            # Не блокируем себя самого
             if user_id == message.from_user.id:
-                try:
-                    await message.answer("❌ Нельзя выполнить действие над самим собой")
-                except BadRequest:
-                    pass
+                return False
+
+            # Проверяем, является ли пользователь администратором бота
+            if await self._is_user_admin(user_id, message.chat.id if message.chat else None, message.bot):
                 return True
 
-            # Нельзя мутить/банить других админов
-            if await self._is_user_admin(user_id, message.chat.id if message.chat else None, message.bot):
+            # В групповых чатах проверяем права администратора
+            if message.chat.type in ['group', 'supergroup']:
                 try:
-                    await message.answer("❌ Нельзя выполнить действие над администратором")
-                except BadRequest:
-                    pass
-                return True
+                    member = await message.bot.get_chat_member(message.chat.id, user_id)
+                    return member.is_chat_admin() or member.status in ['creator', 'administrator']
+                except Exception as e:
+                    self.logger.warning(f"Could not check chat admin status: {e}")
 
             return False
         except Exception as e:
-            self.logger.warning(f"Could not check admin status: {e}")
+            self.logger.warning(f"Error checking target admin status: {e}")
             return False
 
     def start_cleanup_tasks(self, bot):
@@ -444,7 +446,6 @@ class MuteBanManager:
         if not self.cleanup_task or self.cleanup_task.done():
             self.cleanup_task = asyncio.create_task(self._check_expired_mutes_bans(bot))
 
-        # Запускаем задачу очистки банов в боте
         self.bot_ban_manager.start_cleanup_task()
 
     async def stop_cleanup_tasks(self):
@@ -457,7 +458,6 @@ class MuteBanManager:
                 pass
             self.cleanup_task = None
 
-        # Останавливаем задачу очистки банов
         await self.bot_ban_manager.stop_cleanup_task()
 
     async def _check_expired_mutes_bans(self, bot):
@@ -492,16 +492,6 @@ class MuteBanManager:
                                 ),
                             )
 
-                            # Отправляем сообщение о снятии мута
-                            user_name = mute_data.get('user_name', 'Пользователь')
-                            try:
-                                await bot.send_message(
-                                    chat_id=chat_id,
-                                    text=f"🔊 Мут автоматически снят с {user_name}\n⏰ Время мута истекло"
-                                )
-                            except Exception as e:
-                                self.logger.warning(f"Could not send unmute message: {e}")
-
                             self.logger.info(f"Auto-unmuted user {user_id} in chat {chat_id}")
 
                         except Exception as e:
@@ -523,16 +513,6 @@ class MuteBanManager:
                             chat = await bot.get_chat(chat_id)
                             await chat.unban(user_id=user_id)
 
-                            # Отправляем сообщение о разбане
-                            user_name = ban_data.get('user_name', 'Пользователь')
-                            try:
-                                await bot.send_message(
-                                    chat_id=chat_id,
-                                    text=f"✅ Пользователь {user_name} автоматически разбанен\n⏰ Время бана истекло"
-                                )
-                            except Exception as e:
-                                self.logger.warning(f"Could not send unban message: {e}")
-
                             self.logger.info(f"Auto-unbanned user {user_id} in chat {chat_id}")
 
                         except Exception as e:
@@ -542,16 +522,12 @@ class MuteBanManager:
                 for ban_id in expired_bans:
                     self.active_bans.pop(ban_id, None)
 
-                # УДАЛЕНО: await self.bot_ban_manager.check_expired_bot_bans()
-                # Баны в боте теперь проверяются в отдельной задаче _cleanup_expired_bans()
-
-                # Сохраняем изменения
                 if expired_mutes:
                     self._save_active_mutes()
                 if expired_bans:
                     self._save_active_bans()
 
-                await asyncio.sleep(30)  # Проверяем каждые 30 секунд
+                await asyncio.sleep(30)
 
             except asyncio.CancelledError:
                 break
@@ -561,36 +537,23 @@ class MuteBanManager:
 
     # Временные множители
     TIME_MULTIPLIERS = {
-        's': 1,  # секунды
-        'm': 60,  # минуты
-        'h': 3600,  # часы
-        'd': 86400,  # дни
-        'w': 604800  # недели
-    }
-
-    TIME_LABELS = {
-        's': 'секунд',
-        'm': 'минут',
-        'h': 'часов',
-        'd': 'дней',
-        'w': 'недель'
+        's': 1,
+        'm': 60,
+        'h': 3600,
+        'd': 86400,
+        'w': 604800
     }
 
     def parse_time(self, text: str) -> Optional[dict]:
-        """
-        Преобразует строку 10m, 2h, 1d, 30s и т.д. в количество секунд и текстовое представление.
-        Поддерживает русские и английские обозначения.
-        """
+        """Парсит время из строки"""
         if not text:
             return None
 
-        # Заменяем русские обозначения на английские
         text = text.lower().strip()
         ru_to_en = {'с': 's', 'м': 'm', 'ч': 'h', 'д': 'd', 'н': 'w'}
         for ru, en in ru_to_en.items():
             text = text.replace(ru, en)
 
-        # Ищем паттерн: число + опциональная буква
         m = re.match(r"^(\d+)([smhdw]?)$", text)
         if not m:
             return None
@@ -598,7 +561,6 @@ class MuteBanManager:
         value, unit = m.groups()
         value = int(value)
 
-        # Если единица не указана, используем минуты по умолчанию
         if not unit:
             unit = 'm'
 
@@ -607,298 +569,193 @@ class MuteBanManager:
 
         seconds = value * self.TIME_MULTIPLIERS[unit]
 
-        # Формируем читаемое время
+        max_seconds = 315360000
+        if seconds > max_seconds:
+            seconds = max_seconds
+            value = max_seconds // self.TIME_MULTIPLIERS[unit]
+
         if unit == 's':
-            time_text = f"{value} {self._get_plural_form(value, ['секунда', 'секунды', 'секунд'])}"
+            time_text = f"{value}с"
         elif unit == 'm':
-            time_text = f"{value} {self._get_plural_form(value, ['минута', 'минуты', 'минут'])}"
+            time_text = f"{value}м"
         elif unit == 'h':
-            time_text = f"{value} {self._get_plural_form(value, ['час', 'часа', 'часов'])}"
+            time_text = f"{value}ч"
         elif unit == 'd':
-            time_text = f"{value} {self._get_plural_form(value, ['день', 'дня', 'дней'])}"
+            time_text = f"{value}д"
         elif unit == 'w':
-            time_text = f"{value} {self._get_plural_form(value, ['неделя', 'недели', 'недель'])}"
+            time_text = f"{value}н"
         else:
-            time_text = f"{value} {self.TIME_LABELS[unit]}"
+            time_text = f"{value}{unit}"
 
         return {
             'seconds': seconds,
             'text': time_text
         }
 
-    def _get_plural_form(self, n: int, forms: List[str]) -> str:
-        """Возвращает правильную форму слова для числа"""
-        if n % 10 == 1 and n % 100 != 11:
-            return forms[0]
-        elif 2 <= n % 10 <= 4 and (n % 100 < 10 or n % 100 >= 20):
-            return forms[1]
-        else:
-            return forms[2]
+    def _extract_time_from_text(self, text: str) -> Tuple[Optional[int], Optional[str]]:
+        """Извлекает время из текста команды (без описания)"""
+        if not text:
+            return None, None
 
-    def _parse_command_text(self, message: types.Message, command_type: str) -> Tuple[List[str], str]:
-        """
-        Парсит текст команды для разных типов команд
-        """
+        words = text.strip().split()
+        if not words:
+            return None, None
+
+        # Пытаемся распарсить первое слово как время
+        time_result = self.parse_time(words[0])
+        if time_result:
+            seconds = time_result['seconds']
+            time_text = time_result['text']
+            return seconds, time_text
+
+        return None, None
+
+    async def _process_mute_command(self, message: types.Message, command_type: str):
+        """Обрабатывает команду мута"""
         try:
-            if command_type == 'slash':
-                # Для слеш-команд используем get_args()
-                args_text = message.get_args()
-                if not args_text:
-                    return [], ""
-
-                args = args_text.split()
-                return args, args_text
-
-            else:  # command_type == 'text'
-                # Для текстовых команд парсим весь текст
-                text = message.text.strip()
-
-                # Определяем команду и убираем ее из текста
-                command_patterns = [
-                    ('мут ', 4), ('бан ', 4), ('кик ', 4), ('ботбан ', 7),
-                    ('размут', 6), ('разбан', 6), ('разботбан', 9)
-                ]
-
-                for pattern, length in command_patterns:
-                    if text.lower().startswith(pattern):
-                        text = text[length:].strip()
-                        break
-
-                args = text.split() if text else []
-                return args, text
-
-        except Exception as e:
-            self.logger.error(f"Error parsing command text: {e}")
-            return [], ""
-
-    # Новые методы для бана в боте
-    async def botban_user(self, message: types.Message):
-        """Банит пользователя в боте (слеш-команда)"""
-        await self._process_botban_command(message, 'slash')
-
-    async def botunban_user(self, message: types.Message):
-        """Разбанивает пользователя в боте (слеш-команда)"""
-        await self._process_botunban_command(message, 'slash')
-
-    async def botban_user_text(self, message: types.Message):
-        """Банит пользователя в боте (текстовая команда)"""
-        await self._process_botban_command(message, 'text')
-
-    async def botunban_user_text(self, message: types.Message):
-        """Разбанивает пользователя в боте (текстовая команда)"""
-        await self._process_botunban_command(message, 'text')
-
-    async def _process_botban_command(self, message: types.Message, command_type: str):
-        """Обрабатывает команду бана в боте"""
-        try:
-            # Проверяем права администратора
             if not await self._check_admin(message):
+                await message.reply("❌ У вас нет прав администратора!")
                 return
 
-            # Получаем целевого пользователя
-            user_id = None
-            user_name = "Пользователь"
-
-            if message.reply_to_message:
-                user = message.reply_to_message.from_user
-                user_id = user.id
-                user_name = user.full_name
-            else:
-                # Пытаемся получить user_id из аргументов
-                user_id = await self._get_target_user_id_from_args(message)
-                if not user_id:
-                    try:
-                        await message.answer("❌ Ответьте на сообщение пользователя или укажите ID: /botban [ID]")
-                    except BadRequest:
-                        pass
-                    return
-                user_name = f"ID {user_id}"
-
-            if not user_id:
-                try:
-                    await message.answer("❌ Не удалось определить пользователя")
-                except BadRequest:
-                    pass
-                return
-
-            # Проверяем, не является ли пользователь администратором или самим собой
-            if await self._check_target_is_admin(message, user_id):
-                return
-
-            # Парсим аргументы команды
-            args, full_text = self._parse_command_text(message, command_type)
-            seconds = None
-            reason = "Не указана"
-
-            if args:
-                # Пытаемся распарсить время из первого аргумента
-                time_result = self.parse_time(args[0])
-                if time_result:
-                    seconds = time_result['seconds']
-                    time_text = time_result['text']
-                    # Остальные аргументы - причина (если есть)
-                    if len(args) > 1:
-                        reason = ' '.join(args[1:])
-                else:
-                    # Если время не распарсилось, все аргументы - причина
-                    reason = full_text
-                    time_text = "навсегда"
-            else:
-                time_text = "навсегда"
-
-            # Баним пользователя в боте
-            success = await self.bot_ban_manager.ban_user_in_bot(
-                user_id=user_id,
-                admin_id=message.from_user.id,
-                reason=reason,
-                seconds=seconds
-            )
-
-            if success:
-                text = f"🚫 Пользователь {user_name} забанен в боте"
-                if seconds:
-                    text += f" на {time_text}"
-                else:
-                    text += " навсегда"
-                text += f"\n📝 Причина: {reason}"
-
-                if seconds:
-                    text += f"\n⏰ Бан автоматически сниму через {time_text}"
-
-                await message.answer(text)
-                self.logger.info(f"User {user_id} bot-banned by {message.from_user.id}")
-            else:
-                await message.answer("❌ Произошла ошибка при бане пользователя в боте")
-
-        except Exception as e:
-            self.logger.error(f"Error in _process_botban_command: {e}")
-            try:
-                await message.answer("❌ Произошла ошибка при выполнении действия")
-            except BadRequest:
-                pass
-
-    async def _process_botunban_command(self, message: types.Message, command_type: str):
-        """Обрабатывает команду разбана в боте"""
-        try:
-            # Проверяем права администратора
-            if not await self._check_admin(message):
-                return
-
-            # Получаем целевого пользователя
-            user_id = None
-
-            if message.reply_to_message:
-                user_id = message.reply_to_message.from_user.id
-            else:
-                # Пытаемся получить user_id из аргументов
-                user_id = await self._get_target_user_id_from_args(message)
-                if not user_id:
-                    try:
-                        await message.answer("❌ Ответьте на сообщение пользователя или укажите ID: /botunban [ID]")
-                    except BadRequest:
-                        pass
-                    return
-
-            if not user_id:
-                try:
-                    await message.answer("❌ Не удалось определить пользователя")
-                except BadRequest:
-                    pass
-                return
-
-            # Разбаниваем пользователя в боте
-            success = await self.bot_ban_manager.unban_user_in_bot(user_id)
-
-            if success:
-                await message.answer(f"✅ Пользователь {user_id} разбанен в боте")
-                self.logger.info(f"User {user_id} bot-unbanned by {message.from_user.id}")
-            else:
-                await message.answer("❌ Пользователь не забанен в боте или произошла ошибка")
-
-        except Exception as e:
-            self.logger.error(f"Error in _process_botunban_command: {e}")
-            try:
-                await message.answer("❌ Произошла ошибка при выполнении действия")
-            except BadRequest:
-                pass
-
-    async def check_bot_ban(self, user_id: int) -> bool:
-        """Проверяет, забанен ли пользователь в боте (публичный метод для других хендлеров)"""
-        return self.bot_ban_manager.is_user_bot_banned(user_id)
-
-    async def get_bot_ban_info(self, user_id: int) -> Optional[Dict]:
-        """Получает информацию о бане пользователя в боте"""
-        return self.bot_ban_manager.get_ban_info(user_id)
-
-    # Остальные существующие методы остаются без изменений...
-    # [Здесь должны быть все остальные методы из предыдущей версии класса MuteBanManager]
-    # Для экономии места я не дублирую их все, но они должны остаться
-
-    async def _process_mute_ban_command(self, message: types.Message, command_type: str, action_type: str):
-        """Общий метод для обработки команд мута и бана"""
-        try:
-            # Проверяем права администратора
-            if not await self._check_admin(message):
-                return
-
-            # Проверяем права бота (если не в личных сообщениях)
             if message.chat.type != 'private' and not await self._check_bot_permissions(message):
+                await message.reply("❌ У бота нет прав для ограничения пользователей!")
                 return
 
-            # Получаем целевого пользователя
             user = await self._get_target_user_from_reply(message)
             if not user:
+                await message.reply("❌ Команда должна быть отправлена в ответ на сообщение пользователя!")
                 return
 
-            # Парсим аргументы команды
-            args, full_text = self._parse_command_text(message, command_type)
-            seconds = None
-            reason = "Не указана"
+            # ПРОВЕРКА ЗАЩИТЫ: если у целевого пользователя есть защита от мутов
+            if self.has_mute_protection(user.id, message.chat.id):
+                protection_msg = await message.reply("🛡️ <i>Проверяем защиту пользователя...</i>", parse_mode="HTML")
 
-            if args:
-                # Пытаемся распарсить время из первого аргумента
-                time_result = self.parse_time(args[0])
-                if time_result:
-                    seconds = time_result['seconds']
-                    time_text = time_result['text']
-                    # Остальные аргументы - причина (если есть)
-                    if len(args) > 1:
-                        reason = ' '.join(args[1:])
-                else:
-                    # Если время не распарсилось, все аргументы - причина
-                    reason = full_text
-                    time_text = "навсегда"
-            else:
-                time_text = "навсегда"
+                await protection_msg.edit_text(
+                    f"🛡️ <b>Пользователь защищен от мутов!</b>\n\n"
+                    f"👤 <b>{user.full_name}</b> приобрел защиту от команд мутов.\n\n"
+                    f"💡 <i>Мут невозможен для этого пользователя</i>",
+                    parse_mode="HTML"
+                )
+                return
 
-            # Проверяем, не является ли пользователь администратором или самим собой
+            # ПРОВЕРКА: является ли целевой пользователь администратором
             if await self._check_target_is_admin(message, user.id):
+                await message.reply(
+                    f"❌ <b>Нельзя мутить администратора!</b>\n\n"
+                    f"👤 <b>{user.full_name}</b> является администратором.\n\n"
+                    f"💡 <i>Мут невозможен для этого пользователя</i>",
+                    parse_mode="HTML"
+                )
                 return
 
-            # Выполняем действие в зависимости от типа
-            if action_type == 'mute':
-                await self._execute_mute(message, user, seconds, reason, time_text)
+            # Извлекаем время из команды
+            text = message.text or ""
+            if command_type == 'slash':
+                args = message.get_args()
+                time_text = args
+            else:
+                # Для текстовых команд убираем "мут" из текста
+                text = text[4:].strip() if text.lower().startswith('мут ') else text
+                time_text = text
 
-            elif action_type == 'ban':
-                await self._execute_ban(message, user, seconds, reason, time_text)
+            seconds, time_display = self._extract_time_from_text(time_text)  # Убрали reason
 
-            elif action_type == 'kick':
-                await self._execute_kick(message, user, reason)
+            # Если время не указано, используем стандартное (30 минут)
+            if not seconds:
+                seconds = 1800  # 30 минут
+                time_display = "30м"
+
+            await self._execute_mute(message, user, seconds, time_display)  # Убрали reason
 
         except Exception as e:
-            self.logger.error(f"Error in _process_mute_ban_command: {e}")
-            try:
-                await message.answer("❌ Произошла ошибка при выполнении действия")
-            except BadRequest:
-                pass
+            self.logger.error(f"Error in _process_mute_command: {e}")
+            await message.reply("❌ Произошла ошибка при выполнении команды!")
 
-    async def _execute_mute(self, message: types.Message, user: types.User, seconds: int, reason: str, time_text: str):
+    async def _process_ban_command(self, message: types.Message, command_type: str):
+        """Обрабатывает команду бана"""
+        try:
+            if not await self._check_admin(message):
+                await message.reply("❌ У вас нет прав администратора!")
+                return
+
+            if message.chat.type != 'private' and not await self._check_bot_permissions(message):
+                await message.reply("❌ У бота нет прав для бана пользователей!")
+                return
+
+            user = await self._get_target_user_from_reply(message)
+            if not user:
+                await message.reply("❌ Команда должна быть отправлена в ответ на сообщение пользователя!")
+                return
+
+            # ПРОВЕРКА: является ли целевой пользователь администратором
+            if await self._check_target_is_admin(message, user.id):
+                await message.reply(
+                    f"❌ <b>Нельзя банить администратора!</b>\n\n"
+                    f"👤 <b>{user.full_name}</b> является администратором.\n\n"
+                    f"💡 <i>Бан невозможен для этого пользователя</i>",
+                    parse_mode="HTML"
+                )
+                return
+
+            # Извлекаем время из команды (без описания)
+            text = message.text or ""
+            if command_type == 'slash':
+                args = message.get_args()
+                time_text = args
+            else:
+                # Для текстовых команд убираем "бан" из текста
+                text = text[4:].strip() if text.lower().startswith('бан ') else text
+                time_text = text
+
+            seconds, time_display = self._extract_time_from_text(time_text)  # Убрали третий параметр
+
+            # Если время не указано, используем стандартное (1 день)
+            if not seconds:
+                seconds = 86400  # 1 день
+                time_display = "1д"
+
+            await self._execute_ban(message, user, seconds, time_display)
+
+        except Exception as e:
+            self.logger.error(f"Error in _process_ban_command: {e}")
+            await message.reply("❌ Произошла ошибка при выполнении команды!")
+
+    async def _process_kick_command(self, message: types.Message, command_type: str):
+        """Обрабатывает команду кика"""
+        try:
+            if not await self._check_admin(message):
+                await message.reply("❌ У вас нет прав администратора!")
+                return
+
+            if message.chat.type != 'private' and not await self._check_bot_permissions(message):
+                await message.reply("❌ У бота нет прав для кика пользователей!")
+                return
+
+            user = await self._get_target_user_from_reply(message)
+            if not user:
+                await message.reply("❌ Команда должна быть отправлена в ответ на сообщение пользователя!")
+                return
+
+            # ПРОВЕРКА: является ли целевой пользователь администратором
+            if await self._check_target_is_admin(message, user.id):
+                await message.reply(
+                    f"❌ <b>Нельзя кикнуть администратора!</b>\n\n"
+                    f"👤 <b>{user.full_name}</b> является администратором.\n\n"
+                    f"💡 <i>Кик невозможен для этого пользователя</i>",
+                    parse_mode="HTML"
+                )
+                return
+
+            await self._execute_kick(message, user)
+
+        except Exception as e:
+            self.logger.error(f"Error in _process_kick_command: {e}")
+            await message.reply("❌ Произошла ошибка при выполнении команды!")
+
+    async def _execute_mute(self, message: types.Message, user: types.User, seconds: int, time_text: str):
         """Выполняет мут пользователя"""
         try:
-            if seconds:
-                until_date = datetime.now() + timedelta(seconds=seconds)
-            else:
-                until_date = None
+            until_date = datetime.now() + timedelta(seconds=seconds)
 
             await message.chat.restrict(
                 user_id=user.id,
@@ -916,210 +773,126 @@ class MuteBanManager:
             )
 
             # Сохраняем информацию о муте
-            if seconds:
-                mute_id = f"{message.chat.id}_{user.id}"
-                self.active_mutes[mute_id] = {
-                    'chat_id': message.chat.id,
-                    'user_id': user.id,
-                    'user_name': user.full_name,
-                    'expires_at': time.time() + seconds,
-                    'reason': reason,
-                    'admin_id': message.from_user.id,
-                    'admin_name': message.from_user.full_name
-                }
-                self._save_active_mutes()
+            mute_id = f"{message.chat.id}_{user.id}"
+            self.active_mutes[mute_id] = {
+                'chat_id': message.chat.id,
+                'user_id': user.id,
+                'user_name': user.full_name,
+                'expires_at': time.time() + seconds,
+                'admin_id': message.from_user.id,
+                'admin_name': message.from_user.full_name
+            }
+            self._save_active_mutes()
 
-            # Формируем сообщение
-            text = f"🔇 Пользователь {user.full_name} получил мут"
-            if seconds:
-                text += f" на {time_text}"
-            else:
-                text += " навсегда"
-            text += f"\n📝 Причина: {reason}"
-
-            if seconds:
-                text += f"\n⏰ Мут автоматически сниму через {time_text}"
+            # Формируем сообщение (без причины)
+            text = f"🔇 {user.full_name} замьючен на {time_text}"
 
             await message.answer(text)
-            self.logger.info(f"User {user.id} muted by {message.from_user.id} for {time_text}, reason: {reason}")
+            self.logger.info(f"User {user.id} muted by {message.from_user.id} for {time_text}")
 
-        except ChatAdminRequired:
-            try:
-                await message.answer("❌ У бота нет прав для выполнения этого действия")
-            except BadRequest:
-                pass
-        except NotEnoughRightsToRestrict:
-            try:
-                await message.answer("❌ Недостаточно прав, чтобы выполнить это действие")
-            except BadRequest:
-                pass
-        except BadRequest as e:
-            try:
-                await message.answer(f"❌ Ошибка Telegram: {e}")
-            except BadRequest:
-                pass
         except Exception as e:
             self.logger.error(f"Error executing mute: {e}")
-            try:
-                await message.answer("❌ Произошла ошибка при муте пользователя")
-            except BadRequest:
-                pass
+            raise
 
-    async def _execute_ban(self, message: types.Message, user: types.User, seconds: int, reason: str, time_text: str):
+    async def _execute_ban(self, message: types.Message, user: types.User, seconds: int, time_text: str):
         """Выполняет бан пользователя"""
         try:
-            if seconds:
-                until_date = datetime.now() + timedelta(seconds=seconds)
-            else:
-                until_date = None
+            until_date = datetime.now() + timedelta(seconds=seconds)
 
             await message.chat.kick(user_id=user.id, until_date=until_date)
 
             # Сохраняем информацию о бане
-            if seconds:
-                ban_id = f"{message.chat.id}_{user.id}"
-                self.active_bans[ban_id] = {
-                    'chat_id': message.chat.id,
-                    'user_id': user.id,
-                    'user_name': user.full_name,
-                    'expires_at': time.time() + seconds,
-                    'reason': reason,
-                    'admin_id': message.from_user.id,
-                    'admin_name': message.from_user.full_name
-                }
-                self._save_active_bans()
+            ban_id = f"{message.chat.id}_{user.id}"
+            self.active_bans[ban_id] = {
+                'chat_id': message.chat.id,
+                'user_id': user.id,
+                'user_name': user.full_name,
+                'expires_at': time.time() + seconds,
+                'admin_id': message.from_user.id,
+                'admin_name': message.from_user.full_name
+            }
+            self._save_active_bans()
 
-            # Формируем сообщение
-            text = f"⛔ Пользователь {user.full_name} забанен"
-            if seconds:
-                text += f" на {time_text}"
-            else:
-                text += " навсегда"
-            text += f"\n📝 Причина: {reason}"
-
-            if seconds:
-                text += f"\n⏰ Бан автоматически сниму через {time_text}"
+            # Формируем сообщение (без причины)
+            text = f"⛔ {user.full_name} забанен на {time_text}"
 
             await message.answer(text)
-            self.logger.info(f"User {user.id} banned by {message.from_user.id} for {time_text}, reason: {reason}")
+            self.logger.info(f"User {user.id} banned by {message.from_user.id} for {time_text}")
 
-        except ChatAdminRequired:
-            try:
-                await message.answer("❌ У бота нет прав для выполнения этого действия")
-            except BadRequest:
-                pass
-        except BadRequest as e:
-            try:
-                await message.answer(f"❌ Ошибка Telegram: {e}")
-            except BadRequest:
-                pass
         except Exception as e:
             self.logger.error(f"Error executing ban: {e}")
-            try:
-                await message.answer("❌ Произошла ошибка при бане пользователя")
-            except BadRequest:
-                pass
+            raise
 
-    async def _execute_kick(self, message: types.Message, user: types.User, reason: str):
-        """Выполняет кик пользователя без бана и ЧС"""
+    async def _execute_kick(self, message: types.Message, user: types.User):
+        """Выполняет кик пользователя"""
         try:
-            # Используем unban_chat_member для кика без бана
             await message.bot.unban_chat_member(
                 chat_id=message.chat.id,
                 user_id=user.id,
-                only_if_banned=False  # Это позволяет кикнуть даже если пользователь не забанен
+                only_if_banned=False
             )
 
-            await message.answer(f"👢 Пользователь {user.full_name} кикнут\n📝 Причина: {reason}")
-            self.logger.info(f"User {user.id} kicked by {message.from_user.id}, reason: {reason}")
+            await message.answer(f"👢 {user.full_name} кикнут")
+            self.logger.info(f"User {user.id} kicked by {message.from_user.id}")
 
-        except ChatAdminRequired:
-            try:
-                await message.answer("❌ У бота нет прав для выполнения этого действия")
-            except BadRequest:
-                pass
-        except BadRequest as e:
-            error_msg = str(e).lower()
-            if "user is an administrator" in error_msg:
-                try:
-                    await message.answer("❌ Нельзя кикнуть администратора чата")
-                except BadRequest:
-                    pass
-            elif "not enough rights" in error_msg:
-                try:
-                    await message.answer("❌ Недостаточно прав для кика пользователя")
-                except BadRequest:
-                    pass
-            elif "user not found" in error_msg:
-                try:
-                    await message.answer("❌ Пользователь не найден в чате")
-                except BadRequest:
-                    pass
-            else:
-                try:
-                    await message.answer(f"❌ Ошибка Telegram: {e}")
-                except BadRequest:
-                    pass
         except Exception as e:
             self.logger.error(f"Error executing kick: {e}")
-            try:
-                await message.answer("❌ Произошла ошибка при кике пользователя")
-            except BadRequest:
-                pass
+            raise
 
     # Методы для слеш-команд
     async def mute_user(self, message: types.Message):
         """Мутит пользователя (слеш-команда)"""
-        await self._process_mute_ban_command(message, 'slash', 'mute')
+        await self._process_mute_command(message, 'slash')
 
+    async def ban_user(self, message: types.Message):
+        """Банит пользователя (слеш-команда)"""
+        await self._process_ban_command(message, 'slash')
+
+    async def kick_user(self, message: types.Message):
+        """Кикает пользователя (слеш-команда)"""
+        await self._process_kick_command(message, 'slash')
+
+    # Методы для текстовых команд (без слеша)
+    async def mute_user_text(self, message: types.Message):
+        """Мутит пользователя (текстовая команда)"""
+        await self._process_mute_command(message, 'text')
+
+    async def ban_user_text(self, message: types.Message):
+        """Банит пользователя (текстовая команда)"""
+        await self._process_ban_command(message, 'text')
+
+    async def kick_user_text(self, message: types.Message):
+        """Кикает пользователя (текстовая команда)"""
+        await self._process_kick_command(message, 'text')
+
+    # Простые текстовые команды без аргументов
+    async def simple_mute(self, message: types.Message):
+        """Простая команда мута (без времени)"""
+        await self._process_mute_command(message, 'text')
+
+    async def simple_kick(self, message: types.Message):
+        """Простая команда кика"""
+        await self._process_kick_command(message, 'text')
+
+    # Размут и разбан
     async def unmute_user(self, message: types.Message):
         """Снимает мут с пользователя"""
         try:
             if not await self._check_admin(message):
+                await message.reply("❌ У вас нет прав администратора!")
                 return
 
             if not await self._check_bot_permissions(message):
+                await message.reply("❌ У бота нет прав для снятия ограничений!")
                 return
 
-            # Получаем пользователя из reply или из аргументов
-            user = None
-            user_id = None
-            user_name = "Пользователь"
-
-            if message.reply_to_message:
-                user = message.reply_to_message.from_user
-                user_id = user.id
-                user_name = user.full_name
-            else:
-                # Пытаемся получить user_id из аргументов
-                args = message.get_args().split()
-                if args:
-                    try:
-                        user_id = int(args[0])
-                        user_name = f"ID {user_id}"
-                    except ValueError:
-                        try:
-                            await message.answer("❌ Неверный формат ID пользователя")
-                        except BadRequest:
-                            pass
-                        return
-                else:
-                    try:
-                        await message.answer("❌ Ответьте на сообщение пользователя или укажите ID: /unmute [ID]")
-                    except BadRequest:
-                        pass
-                    return
-
-            if not user_id:
-                try:
-                    await message.answer("❌ Не удалось определить пользователя")
-                except BadRequest:
-                    pass
+            user = await self._get_target_user_from_reply(message)
+            if not user:
+                await message.reply("❌ Команда должна быть отправлена в ответ на сообщение пользователя!")
                 return
 
-            # Снимаем ограничения
             await message.chat.restrict(
-                user_id=user_id,
+                user_id=user.id,
                 permissions=types.ChatPermissions(
                     can_send_messages=True,
                     can_send_media_messages=True,
@@ -1133,89 +906,45 @@ class MuteBanManager:
             )
 
             # Удаляем из активных мутов
-            mute_id = f"{message.chat.id}_{user_id}"
+            mute_id = f"{message.chat.id}_{user.id}"
             if mute_id in self.active_mutes:
                 del self.active_mutes[mute_id]
                 self._save_active_mutes()
-                self.logger.info(f"Removed mute record for user {user_id}")
 
-            try:
-                await message.answer(f"🔊 Мут снят с {user_name}")
-            except BadRequest:
-                pass
-            self.logger.info(f"User {user_id} unmuted by {message.from_user.id}")
+            await message.answer(f"🔊 {user.full_name} размучен")
+            self.logger.info(f"User {user.id} unmuted by {message.from_user.id}")
 
-        except BadRequest as e:
-            error_msg = str(e).lower()
-            if "user not found" in error_msg:
-                try:
-                    await message.answer("❌ Пользователь не найден в этом чате")
-                except BadRequest:
-                    pass
-            elif "not enough rights" in error_msg:
-                try:
-                    await message.answer("❌ Недостаточно прав для снятия мута")
-                except BadRequest:
-                    pass
-            elif "can't remove chat owner" in error_msg:
-                try:
-                    await message.answer("❌ Нельзя снять мут с создателя чата")
-                except BadRequest:
-                    pass
-            else:
-                try:
-                    await message.answer(f"❌ Ошибка Telegram API: {e}")
-                except BadRequest:
-                    pass
         except Exception as e:
             self.logger.error(f"Error in unmute_user: {e}")
-            try:
-                await message.answer("❌ Произошла ошибка при снятии мута")
-            except BadRequest:
-                pass
-
-    async def ban_user(self, message: types.Message):
-        """Банит пользователя (слеш-команда)"""
-        await self._process_mute_ban_command(message, 'slash', 'ban')
+            await message.reply("❌ Произошла ошибка при снятии мута!")
 
     async def unban_user(self, message: types.Message):
         """Разбанивает пользователя"""
         try:
             if not await self._check_admin(message):
+                await message.reply("❌ У вас нет прав администратора!")
                 return
 
             if not await self._check_bot_permissions(message):
+                await message.reply("❌ У бота нет прав для разбана!")
                 return
 
             user_id = None
 
             if message.reply_to_message:
-                # Если есть reply, используем ID из reply
                 user_id = message.reply_to_message.from_user.id
             else:
-                # Иначе используем аргументы
                 args = message.get_args().split()
                 if args and len(args) >= 1:
                     try:
                         user_id = int(args[0])
                     except ValueError:
-                        try:
-                            await message.answer("❌ Неверный формат. ID должен быть числом")
-                        except BadRequest:
-                            pass
+                        await message.reply("❌ Укажите ID пользователя для разбана!")
                         return
-                else:
-                    try:
-                        await message.answer("❌ Использование: /unban [ID пользователя] или ответьте на сообщение")
-                    except BadRequest:
-                        pass
-                    return
 
             if not user_id:
-                try:
-                    await message.answer("❌ Не удалось определить пользователя")
-                except BadRequest:
-                    pass
+                await message.reply(
+                    "❌ Команда должна быть отправлена в ответ на сообщение или с указанием ID пользователя!")
                 return
 
             await message.chat.unban(user_id=user_id)
@@ -1226,102 +955,207 @@ class MuteBanManager:
                 del self.active_bans[ban_id]
                 self._save_active_bans()
 
-            try:
-                await message.answer(f"✅ Пользователь {user_id} разбанен")
-            except BadRequest:
-                pass
+            await message.answer(f"✅ Пользователь {user_id} разбанен")
             self.logger.info(f"User {user_id} unbanned by {message.from_user.id}")
 
-        except BadRequest as e:
-            if "user not found" in str(e).lower() or "not in the chat" in str(e).lower():
-                try:
-                    await message.answer("❌ Пользователь не найден в бане этого чата")
-                except BadRequest:
-                    pass
-            else:
-                try:
-                    await message.answer(f"❌ Ошибка: {e}")
-                except BadRequest:
-                    pass
         except Exception as e:
             self.logger.error(f"Error in unban_user: {e}")
-            try:
-                await message.answer("❌ Произошла ошибка при разбане")
-            except BadRequest:
-                pass
+            await message.reply("❌ Произошла ошибка при разбане!")
 
-    async def kick_user(self, message: types.Message):
-        """Кикает пользователя (слеш-команда)"""
-        await self._process_mute_ban_command(message, 'slash', 'kick')
-
-    # Методы для текстовых команд (без слеша)
-    async def mute_user_text(self, message: types.Message):
-        """Мутит пользователя (текстовая команда)"""
-        await self._process_mute_ban_command(message, 'text', 'mute')
-
-    async def ban_user_text(self, message: types.Message):
-        """Банит пользователя (текстовая команда)"""
-        await self._process_mute_ban_command(message, 'text', 'ban')
-
-    async def kick_user_text(self, message: types.Message):
-        """Кикает пользователя (текстовая команда)"""
-        await self._process_mute_ban_command(message, 'text', 'kick')
-
-    # Простые текстовые команды без аргументов
-    async def simple_ban(self, message: types.Message):
-        """Простая команда бана"""
-        await self._process_simple_command(message, 'ban')
-
-    async def simple_mute(self, message: types.Message):
-        """Простая команда мута"""
-        await self._process_simple_command(message, 'mute')
-
-    async def simple_kick(self, message: types.Message):
-        """Простая команда кика"""
-        await self._process_simple_command(message, 'kick')
-
-    async def _process_simple_command(self, message: types.Message, action_type: str):
-        """Обрабатывает простые команды без аргументов"""
+    # Бан в боте
+    async def _process_botban_command(self, message: types.Message, command_type: str):
+        """Обрабатывает команду бана в боте"""
         try:
-            # Проверяем права администратора
             if not await self._check_admin(message):
+                await message.reply("❌ У вас нет прав администратора!")
                 return
 
-            # Проверяем права бота
-            if not await self._check_bot_permissions(message):
+            user_id = None
+            user_name = "Пользователь"
+
+            if message.reply_to_message:
+                user = message.reply_to_message.from_user
+                user_id = user.id
+                user_name = user.full_name
+            else:
+                args, full_text = self._parse_command_text(message, command_type)
+                if not args:
+                    await message.reply("❌ Укажите пользователя для бана в боте!")
+                    return
+
+                target = args[0]
+
+                try:
+                    user_id = int(target)
+                    user_name = f"ID {user_id}"
+                except ValueError:
+                    if target.startswith('@'):
+                        try:
+                            user = await message.bot.get_chat(target)
+                            user_id = user.id
+                            user_name = user.full_name
+                        except Exception as e:
+                            await message.reply("❌ Пользователь не найден!")
+                            return
+                    else:
+                        await message.reply("❌ Укажите ID пользователя или @username!")
+                        return
+
+            if not user_id:
+                await message.reply("❌ Пользователь не найден!")
                 return
 
-            user = await self._get_target_user_from_reply(message)
-            if not user:
+            if await self._check_target_is_admin(message, user_id):
+                await message.reply("❌ Нельзя банить администратора в боте!")
                 return
 
-            # Проверяем, не является ли пользователь администратором или самим собой
-            if await self._check_target_is_admin(message, user.id):
-                return
-
+            args, full_text = self._parse_command_text(message, command_type)
+            seconds = None
             reason = "Не указана"
 
-            if action_type == 'mute':
-                await self._execute_mute(message, user, None, reason, "навсегда")
-            elif action_type == 'ban':
-                await self._execute_ban(message, user, None, reason, "навсегда")
-            elif action_type == 'kick':
-                await self._execute_kick(message, user, reason)
+            if args:
+                remaining_args = args[1:] if len(args) > 1 else []
+
+                if remaining_args:
+                    time_result = self.parse_time(remaining_args[0])
+                    if time_result:
+                        seconds = time_result['seconds']
+                        time_text = time_result['text']
+                        if len(remaining_args) > 1:
+                            reason = ' '.join(remaining_args[1:])
+                    else:
+                        reason = ' '.join(remaining_args) if remaining_args else "Не указана"
+                        time_text = "навсегда"
+                else:
+                    time_text = "навсегда"
+            else:
+                time_text = "навсегда"
+
+            success = await self.bot_ban_manager.ban_user_in_bot(
+                user_id=user_id,
+                admin_id=message.from_user.id,
+                reason=reason,
+                seconds=seconds
+            )
+
+            if success:
+                text = f"🚫 {user_name} забанен в боте"
+                if seconds:
+                    text += f" на {time_text}"
+                if reason:
+                    text += f"\n📝 Причина: {reason}"
+
+                await message.answer(text)
+                self.logger.info(f"User {user_id} bot-banned by {message.from_user.id}")
 
         except Exception as e:
-            self.logger.error(f"Error in simple_{action_type}: {e}")
-            try:
-                await message.answer("❌ Произошла ошибка при выполнении действия")
-            except BadRequest:
-                pass
+            self.logger.error(f"Error in _process_botban_command: {e}")
+            await message.reply("❌ Произошла ошибка при бане в боте!")
 
-    async def unmute_user_text(self, message: types.Message):
-        """Снимает мут (текстовая команда)"""
-        await self.unmute_user(message)
+    async def _process_botunban_command(self, message: types.Message, command_type: str):
+        """Обрабатывает команду разбана в боте"""
+        try:
+            if not await self._check_admin(message):
+                await message.reply("❌ У вас нет прав администратора!")
+                return
 
-    async def unban_user_text(self, message: types.Message):
-        """Разбанивает пользователя (текстовая команда)"""
-        await self.unban_user(message)
+            user_id = None
+
+            if message.reply_to_message:
+                user_id = message.reply_to_message.from_user.id
+            else:
+                args, full_text = self._parse_command_text(message, command_type)
+                if not args:
+                    await message.reply("❌ Укажите пользователя для разбана в боте!")
+                    return
+
+                target = args[0]
+
+                try:
+                    user_id = int(target)
+                except ValueError:
+                    if target.startswith('@'):
+                        try:
+                            user = await message.bot.get_chat(target)
+                            user_id = user.id
+                        except Exception as e:
+                            await message.reply("❌ Пользователь не найден!")
+                            return
+                    else:
+                        await message.reply("❌ Укажите ID пользователя или @username!")
+                        return
+
+            if not user_id:
+                await message.reply("❌ Пользователь не найден!")
+                return
+
+            success = await self.bot_ban_manager.unban_user_in_bot(user_id)
+
+            if success:
+                await message.answer(f"✅ Пользователь {user_id} разбанен в боте")
+                self.logger.info(f"User {user_id} bot-unbanned by {message.from_user.id}")
+
+        except Exception as e:
+            self.logger.error(f"Error in _process_botunban_command: {e}")
+            await message.reply("❌ Произошла ошибка при разбане в боте!")
+
+    def _parse_command_text(self, message: types.Message, command_type: str) -> Tuple[List[str], str]:
+        """Парсит текст команды"""
+        try:
+            if command_type == 'slash':
+                args_text = message.get_args()
+                if not args_text:
+                    return [], ""
+
+                args = args_text.split()
+                return args, args_text
+
+            else:
+                text = message.text.strip()
+
+                command_patterns = [
+                    ('ботбан ', 7), ('разботбан', 9)
+                ]
+
+                for pattern, length in command_patterns:
+                    if text.lower().startswith(pattern):
+                        text = text[length:].strip()
+                        break
+
+                args = text.split() if text else []
+                return args, text
+
+        except Exception as e:
+            self.logger.error(f"Error parsing command text: {e}")
+            return [], ""
+
+    async def botban_user(self, message: types.Message):
+        """Банит пользователя в боте (слеш-команда)"""
+        await self._process_botban_command(message, 'slash')
+
+    async def botunban_user(self, message: types.Message):
+        """Разбанивает пользователя в боте (слеш-команда)"""
+        await self._process_botunban_command(message, 'slash')
+
+    async def botban_user_text(self, message: types.Message):
+        """Банит пользователя в боте (текстовая команда)"""
+        await self._process_botban_command(message, 'text')
+
+    async def botunban_user_text(self, message: types.Message):
+        """Разбанивает пользователя в боте (текстовая команда)"""
+        await self._process_botunban_command(message, 'text')
+
+    async def check_bot_ban(self, user_id: int) -> bool:
+        """Проверяет, забанен ли пользователь в боте"""
+        return self.bot_ban_manager.is_user_bot_banned(user_id)
+
+    async def get_bot_ban_info(self, user_id: int) -> Optional[Dict]:
+        """Получает информацию о бане пользователя в боте"""
+        return self.bot_ban_manager.get_ban_info(user_id)
+
+    async def simple_ban(self, message: types.Message):
+        """Простая команда бана (без времени)"""
+        await self._process_ban_command(message, 'text')
 
     async def restore_mutes_after_restart(self, bot):
         """Восстанавливает активные муты после перезапуска бота"""
@@ -1335,9 +1169,7 @@ class MuteBanManager:
                 user_id = mute_data['user_id']
                 expires_at = mute_data['expires_at']
 
-                # Проверяем не истекло ли время
                 if time.time() > expires_at:
-                    # Мут истек, снимаем его
                     chat = await bot.get_chat(chat_id)
                     await chat.restrict(
                         user_id=user_id,
@@ -1352,11 +1184,9 @@ class MuteBanManager:
                             can_pin_messages=False
                         ),
                     )
-                    # Удаляем из активных
                     del self.active_mutes[mute_id]
                     self.logger.info(f"Removed expired mute for user {user_id} in chat {chat_id}")
                 else:
-                    # Мут еще активен, обновляем права
                     until_date = datetime.fromtimestamp(expires_at)
                     chat = await bot.get_chat(chat_id)
                     await chat.restrict(
@@ -1377,44 +1207,10 @@ class MuteBanManager:
 
             except Exception as e:
                 self.logger.error(f"Error restoring mute {mute_id}: {e}")
-                # Если не удалось восстановить, удаляем из активных
                 del self.active_mutes[mute_id]
 
         self._save_active_mutes()
         self.logger.info("Active mutes restoration completed")
-
-    async def temp_ban_user(self, message: types.Message):
-        """Временный бан пользователя"""
-        await self.ban_user(message)
-
-    async def warn_user(self, message: types.Message):
-        """Выдает предупреждение пользователю"""
-        try:
-            if not await self._check_admin(message):
-                return
-
-            user = await self._get_target_user_from_reply(message)
-            if not user:
-                return
-
-            reason = message.get_args() or "Не указана"
-
-            try:
-                await message.answer(
-                    f"⚠️ Пользователь {user.full_name} получил предупреждение\n"
-                    f"📝 Причина: {reason}\n\n"
-                    f"ℹ️ При повторных нарушениях последуют более строгие меры"
-                )
-            except BadRequest:
-                pass
-            self.logger.info(f"User {user.id} warned by {message.from_user.id}, reason: {reason}")
-
-        except Exception as e:
-            self.logger.error(f"Error in warn_user: {e}")
-            try:
-                await message.answer("❌ Произошла ошибка при выдаче предупреждения")
-            except BadRequest:
-                pass
 
 
 def register_mute_ban_handlers(dp: Dispatcher):
@@ -1427,8 +1223,6 @@ def register_mute_ban_handlers(dp: Dispatcher):
     dp.register_message_handler(manager.ban_user, Command("ban"))
     dp.register_message_handler(manager.unban_user, Command("unban"))
     dp.register_message_handler(manager.kick_user, Command("kick"))
-    dp.register_message_handler(manager.temp_ban_user, Command("tempban"))
-    dp.register_message_handler(manager.warn_user, Command("warn"))
 
     # Новые команды для бана в боте
     dp.register_message_handler(manager.botban_user, Command("botban"))
@@ -1445,21 +1239,44 @@ def register_mute_ban_handlers(dp: Dispatcher):
     dp.register_message_handler(manager.botban_user, commands=["ботбан"])
     dp.register_message_handler(manager.botunban_user, commands=["разботбан"])
 
-    # Текстовые команды (без слеша) с аргументами
-    dp.register_message_handler(manager.mute_user_text, lambda m: m.text and m.text.lower().startswith('мут '))
-    dp.register_message_handler(manager.ban_user_text, lambda m: m.text and m.text.lower().startswith('бан '))
-    dp.register_message_handler(manager.kick_user_text, lambda m: m.text and m.text.lower().startswith('кик '))
-    dp.register_message_handler(manager.botban_user_text, lambda m: m.text and m.text.lower().startswith('ботбан '))
+    # Текстовые команды (без слеша) - ТОЛЬКО ОПРЕДЕЛЕННЫЕ ФОРМАТЫ
+    dp.register_message_handler(
+        manager.mute_user_text,
+        lambda m: m.text and (
+                m.text.lower() == 'мут' or
+                re.match(r'^мут\s+\d+[smhdw]?$', m.text.lower().strip()) or
+                re.match(r'^мут\s+\d+[смчдн]?$', m.text.lower().strip())
+        )
+    )
 
-    # Простые текстовые команды (просто "бан", "мут", "кик" без аргументов)
-    dp.register_message_handler(manager.simple_ban, lambda m: m.text and m.text.lower().strip() == 'бан')
+    dp.register_message_handler(
+        manager.ban_user_text,
+        lambda m: m.text and (
+                m.text.lower() == 'бан' or
+                re.match(r'^бан\s+\d+[smhdw]?$', m.text.lower().strip()) or
+                re.match(r'^бан\s+\d+[смчдн]?$', m.text.lower().strip())
+        )
+    )
+
+    dp.register_message_handler(
+        manager.kick_user_text,
+        lambda m: m.text and m.text.lower().strip() == 'кик'
+    )
+
+    dp.register_message_handler(
+        manager.botban_user_text,
+        lambda m: m.text and m.text.lower().startswith('ботбан ')
+    )
+
+    # Простые текстовые команды (просто "мут", "бан", "кик" без аргументов)
     dp.register_message_handler(manager.simple_mute, lambda m: m.text and m.text.lower().strip() == 'мут')
+    dp.register_message_handler(manager.simple_ban, lambda m: m.text and m.text.lower().strip() == 'бан')
     dp.register_message_handler(manager.simple_kick, lambda m: m.text and m.text.lower().strip() == 'кик')
 
     # Текстовые команды для размута и разбана
-    dp.register_message_handler(manager.unmute_user_text, lambda m: m.text and m.text.lower().startswith('размут'))
-    dp.register_message_handler(manager.unban_user_text, lambda m: m.text and m.text.lower().startswith('разбан'))
+    dp.register_message_handler(manager.unmute_user, lambda m: m.text and m.text.lower().startswith('размут'))
+    dp.register_message_handler(manager.unban_user, lambda m: m.text and m.text.lower().startswith('разбан'))
     dp.register_message_handler(manager.botunban_user_text, lambda m: m.text and m.text.lower().startswith('разботбан'))
 
-    print("✅ Mute/Ban обработчики зарегистрированы")
+    print("✅ Mute/Ban обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой от мутов)")
     return manager

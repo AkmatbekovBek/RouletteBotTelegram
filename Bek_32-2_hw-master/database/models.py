@@ -82,7 +82,7 @@ class DailyRecord(Base):
     user_id = Column(Integer, ForeignKey("telegram_users.telegram_id"))
     username = Column(Text, nullable=False)
     first_name = Column(Text)
-    amount = Column(BigInteger, nullable=False)
+    amount = Column(Numeric, nullable=False)
     record_date = Column(Date, nullable=False)
     chat_id = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

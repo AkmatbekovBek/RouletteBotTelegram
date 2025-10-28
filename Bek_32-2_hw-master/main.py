@@ -10,6 +10,8 @@ from sqlalchemy import text
 
 from aiogram import executor, Dispatcher
 from aiogram.types import AllowedUpdates
+
+from handlers.gifts import ensure_gifts_on_startup
 from middlewares.bot_ban_middleware import BotBanMiddleware
 from middlewares.throttling import setup_throttling
 
@@ -19,6 +21,7 @@ from database import engine, SessionLocal
 from database.models import Base
 
 # Импорты обработчиков
+# В main.py измените порядок HANDLERS:
 HANDLERS = [
     ("start", "register_start_handler"),
     ("admin", "register_admin_handlers"),
@@ -32,7 +35,6 @@ HANDLERS = [
     ("record", "register_record_handlers"),
     ("gifts", "register_gift_handlers"),
     ("marriage_handler", "register_marriage_handlers"),
-
     ("roulette", "register_roulette_handlers"),
     ("police_handler", "register_police_handlers"),
     ("thief_handler", "register_thief_handlers"),
@@ -132,17 +134,17 @@ async def setup_middleware_first():
 
         logger.info("🛠️ Настройка middleware...")
 
-        # 1. СНАЧАЛА регистрируем ThrottlingMiddleware
+        # 1. СНАЧАЛА регистрируем AutoRegisterMiddleware (самый первый!)
+        dp.middleware.setup(AutoRegisterMiddleware())
+        logger.info("✅ AutoRegisterMiddleware зарегистрирован")
+
+        # 2. Затем ThrottlingMiddleware
         setup_throttling(
             dp,
             throttled_commands=THROTTLED_COMMANDS,
             limit=2  # 2 секунды для тестирования
         )
         logger.info(f"✅ ThrottlingMiddleware зарегистрирован для {len(THROTTLED_COMMANDS)} команд")
-
-        # 2. Затем AutoRegisterMiddleware
-        dp.middleware.setup(AutoRegisterMiddleware())
-        logger.info("✅ AutoRegisterMiddleware зарегистрирован")
 
         return True
 
@@ -239,6 +241,8 @@ async def on_startup(_):
     # 3. ПОТОМ регистрируем обработчики
     logger.info("📝 Регистрация обработчиков...")
     mute_ban_manager = register_all_handlers()
+
+    await ensure_gifts_on_startup()
 
     # 4. Теперь настраиваем BotBanMiddleware (нужен mute_ban_manager)
     await setup_bot_ban_middleware(mute_ban_manager)

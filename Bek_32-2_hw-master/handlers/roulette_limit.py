@@ -8,44 +8,44 @@ import database.models as models
 
 class RouletteLimitManager:
     def __init__(self):
-        self.limit_per_day = 30  # Лимит прокрутов в день
+        self.limit_per_day = 30
+        self.unlimited_items = [7]  # Товары дающие безлимит
 
     def _get_today_date(self) -> date:
         """Возвращает сегодняшнюю дату"""
         return date.today()
 
     def has_roulette_limit_removed_in_chat(self, user_id: int, chat_id: int) -> bool:
-        """Проверяет, купил ли пользователь снятие лимита рулетки для конкретного чата"""
+        """Проверяет безлимитный доступ к рулетке"""
         db = next(get_db())
         try:
-            # Проверяем покупку снятия лимита (ID 5) в конкретном чате
-            has_limit_removed = ShopRepository.has_user_purchased_in_chat(db, user_id, 5, chat_id)
+            print(f"🔍 ДЕТАЛЬНАЯ ПРОВЕРКА БЕЗЛИМИТА:")
+            print(f"   👤 Пользователь: {user_id}")
+            print(f"   💬 Чат: {chat_id}")
 
-            if has_limit_removed:
-                print(f"✅ Пользователь {user_id} купил снятие лимита в чате {chat_id}")
-            else:
-                print(f"❌ Пользователь {user_id} НЕ имеет снятия лимита в чате {chat_id}")
+            # Способ 1: Проверка через has_active_purchase (глобальная)
+            for item_id in self.unlimited_items:
+                if ShopRepository.has_active_purchase(db, user_id, item_id):
+                    print(f"   ✅ Способ 1: Глобальный безлимит (товар {item_id})")
+                    return True
 
-            return has_limit_removed
+            # Способ 2: Проверка через get_active_purchases
+            active_purchases = ShopRepository.get_active_purchases(db, user_id)
+            print(f"   🛍️ Все активные покупки: {active_purchases}")
+
+            for item_id in self.unlimited_items:
+                if item_id in active_purchases:
+                    print(f"   ✅ Способ 2: Безлимит через активные покупки (товар {item_id})")
+                    return True
+
+            print(f"   ❌ Все способы проверки: БЕЗЛИМИТА НЕТ")
+            return False
 
         except Exception as e:
-            print(f"❌ Ошибка проверки снятия лимита для чата: {e}")
+            print(f"❌ Ошибка детальной проверки безлимита: {e}")
             return False
         finally:
             db.close()
-
-    def _init_user_chat_limit(self, db: Session, user_id: int, chat_id: int):
-        """Инициализирует запись лимита для пользователя в конкретном чате если её нет"""
-        try:
-            today = self._get_today_date()
-
-            # Используем CRUD метод для создания/получения лимита
-            RouletteLimitRepository.get_or_create_limit(db, user_id, chat_id, today)
-            print(f"✅ Инициализирован лимит для пользователя {user_id} в чате {chat_id} на {today}")
-
-        except Exception as e:
-            print(f"❌ Ошибка инициализации лимита для чата: {e}")
-            db.rollback()
 
     def get_today_spin_count_in_chat(self, user_id: int, chat_id: int) -> int:
         """Возвращает количество прокрутов пользователя за сегодня в конкретном чате"""
@@ -60,8 +60,6 @@ class RouletteLimitManager:
             ).first()
 
             spin_count = result.spin_count if result else 0
-            # УБЕРИТЕ ЛОГ ЧТОБЫ ИЗБЕЖАТЬ ДУБЛИРОВАНИЯ
-            # print(f"📊 Пользователь {user_id} в чате {chat_id}: {spin_count} прокрутов сегодня")
             return spin_count
 
         except Exception as e:
@@ -75,17 +73,35 @@ class RouletteLimitManager:
         Проверяет, может ли пользователь крутить рулетку в конкретном чате
         Возвращает (может_ли_крутить, осталось_прокрутов)
         """
-        # Если пользователь купил снятие лимита - всегда разрешаем для всех чатов
-        if self.has_roulette_limit_removed_in_chat(user_id, chat_id):
+        print(f"🎰 ПРОВЕРКА ДОСТУПА К РУЛЕТКЕ:")
+        print(f"   👤 Пользователь: {user_id}")
+        print(f"   💬 Чат: {chat_id}")
+
+        # Проверяем безлимитный доступ
+        has_unlimited = self.has_roulette_limit_removed_in_chat(user_id, chat_id)
+
+        if has_unlimited:
+            print(f"   ✅ СТАТУС: БЕЗЛИМИТНЫЙ ДОСТУП")
             return True, -1  # -1 означает безлимит
 
-        today_spins = self.get_today_spin_count_in_chat(user_id, chat_id)
+        # Если безлимита нет, проверяем стандартный лимит
+        try:
+            today_spins = self.get_today_spin_count_in_chat(user_id, chat_id)
+            print(f"   📊 Сегодняшние прокруты: {today_spins}")
 
-        # Проверяем не превышен ли лимит
-        if today_spins >= self.limit_per_day:
-            return False, 0
+            # Проверяем не превышен ли лимит
+            if today_spins >= self.limit_per_day:
+                print(f"   ❌ СТАТУС: ЛИМИТ ПРЕВЫШЕН ({today_spins}/{self.limit_per_day})")
+                return False, 0
 
-        return True, self.limit_per_day - today_spins
+            remaining = self.limit_per_day - today_spins
+            print(f"   ✅ СТАТУС: ДОСТУП РАЗРЕШЕН ({remaining} осталось)")
+            return True, remaining
+
+        except Exception as e:
+            print(f"   ❌ Ошибка проверки лимита: {e}")
+            # В случае ошибки разрешаем прокрут
+            return True, self.limit_per_day
 
     def record_spin_in_chat(self, user_id: int, chat_id: int) -> bool:
         """
@@ -125,7 +141,7 @@ class RouletteLimitManager:
     def get_spin_info_for_chat(self, user_id: int, chat_id: int) -> str:
         """Возвращает информацию о лимитах пользователя в конкретном чате"""
         if self.has_roulette_limit_removed_in_chat(user_id, chat_id):
-            return "🔐 Лимит рулетки снят в этом чате! Вы можете играть без ограничений!"
+            return "🔐 Безлимитный доступ к рулетке! Вы можете играть без ограничений!"
 
         can_spin, remaining = self.can_spin_roulette_in_chat(user_id, chat_id)
         today_spins = self.get_today_spin_count_in_chat(user_id, chat_id)
@@ -191,30 +207,6 @@ class RouletteLimitManager:
             print(f"❌ Ошибка очистки старых лимитов: {e}")
             return 0
 
-    def can_spin_roulette_in_chat(self, user_id: int, chat_id: int) -> Tuple[bool, int]:
-        """
-        Проверяет, может ли пользователь крутить рулетку в конкретном чате
-        Возвращает (может_ли_крутить, осталось_прокрутов)
-        """
-        print(f"🔍 Проверка лимита: user_id={user_id}, chat_id={chat_id}")
-
-        # Если пользователь купил снятие лимита - всегда разрешаем для всех чатов
-        has_limit_removed = self.has_roulette_limit_removed_in_chat(user_id, chat_id)
-        if has_limit_removed:
-            print(f"✅ Пользователь {user_id} имеет безлимит в чате {chat_id}")
-            return True, -1
-
-        today_spins = self.get_today_spin_count_in_chat(user_id, chat_id)
-        print(f"📊 Сегодняшние прокруты: {today_spins}")
-
-        # Проверяем не превышен ли лимит
-        if today_spins >= self.limit_per_day:
-            print(f"❌ Лимит превышен: {today_spins}/{self.limit_per_day}")
-            return False, 0
-
-        remaining = self.limit_per_day - today_spins
-        print(f"✅ Можно крутить, осталось: {remaining}")
-        return True, remaining
 
 # Глобальный экземпляр менеджера лимитов
 roulette_limit_manager = RouletteLimitManager()

@@ -14,6 +14,10 @@ class RecordHandler:
         # Список ID администраторов бота
         self.BOT_ADMIN_IDS = [1054684037]  # Замените на реальные ID админов бота
 
+    def _get_user_profile_link(self, user_id: int, display_name: str) -> str:
+        """Создает кликабельную ссылку на профиль пользователя"""
+        return f'<a href="tg://user?id={user_id}">{display_name}</a>'
+
     async def _check_admin_rights(self, message_or_callback) -> bool:
         """Проверяет, является ли пользователь администратором группы или бота"""
         try:
@@ -280,12 +284,16 @@ class RecordHandler:
             for i, (record_user_id, display_name, amount) in enumerate(top_wins):
                 if i < len(medals):
                     medal = medals[i]
-                    reply_text += f"{medal} {display_name} — {amount:,} монет (рекорд выигрыша)\n"
+                    # Создаем кликабельное имя для каждого призера
+                    clickable_name = self._get_user_profile_link(record_user_id, display_name)
+                    reply_text += f"{medal} {clickable_name} — {amount:,} монет (рекорд выигрыша)\n"
 
             # Показываем третье место - рекорд проигрышей
             if top_losses:
                 loss_user_id, loss_display_name, loss_amount = top_losses[0]
-                reply_text += f"🥉 {loss_display_name} — {loss_amount:,} монет (рекорд проигрыша)\n"
+                # Создаем кликабельное имя для рекордсмена проигрышей
+                clickable_loss_name = self._get_user_profile_link(loss_user_id, loss_display_name)
+                reply_text += f"🥉 {clickable_loss_name} — {loss_amount:,} монет (рекорд проигрыша)\n"
             else:
                 reply_text += "🥉 Пока нет рекорда проигрышей\n"
 
@@ -294,16 +302,18 @@ class RecordHandler:
             user_loss_record = self._get_user_loss_record(db, user_id)
 
             current_user_name = first_name or username or "Аноним"
+            # Текущего пользователя тоже делаем кликабельным
+            current_clickable_name = self._get_user_profile_link(user_id, current_user_name)
 
             if user_win_record:
                 user_amount = user_win_record.amount
                 win_position = self._get_user_global_rank_today(db, user_id)
-                reply_text += f"\n🎯 Ваш рекорд выигрыша: {win_position or '?'}. {current_user_name} — {user_amount:,} монет"
+                reply_text += f"\n🎯 Ваш рекорд выигрыша: {win_position or '?'}. {current_clickable_name} — {user_amount:,} монет"
 
             if user_loss_record:
                 loss_amount = user_loss_record.defeat_coins
                 loss_position = self._get_user_loss_rank_today(db, user_id)
-                reply_text += f"\n💸 Ваш рекорд проигрыша: {loss_position or '?'}. {current_user_name} — {loss_amount:,} монет"
+                reply_text += f"\n💸 Ваш рекорд проигрыша: {loss_position or '?'}. {current_clickable_name} — {loss_amount:,} монет"
 
             await message.reply(reply_text, parse_mode=types.ParseMode.HTML)
 

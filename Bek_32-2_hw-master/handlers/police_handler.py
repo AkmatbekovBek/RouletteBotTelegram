@@ -14,9 +14,10 @@ class PoliceHandler:
         self.logger = logger
         self.MAX_ARREST_MINUTES = 1440  # Максимум 24 часа
         self.MIN_ARREST_MINUTES = 1  # Минимум 1 минута
-        self.DEFAULT_ARREST_MINUTES = 180  # По умолчанию 5 минут
+        self.DEFAULT_ARREST_MINUTES = 180  # По умолчанию 3 часа
+        self.POLICE_COOLDOWN_HOURS = 3  # КД между арестами для полицейского - 3 часа
         self.POLICE_PRIVILEGE_ID = 2  # ID привилегии Полицейский
-        self.THIEF_PRIVILEGE_ID = 1   # ID привилегии Вор в законе
+        self.THIEF_PRIVILEGE_ID = 1  # ID привилегии Вор в законе
 
     async def _ensure_table_exists(self):
         """Проверяет существование таблицы и создает если нужно"""
@@ -34,30 +35,54 @@ class PoliceHandler:
         """Проверяет, есть ли у пользователя права полицейского"""
         db = next(get_db())
         try:
+            self.logger.info(f"🔍 Проверка прав полицейского для пользователя {user_id}")
+
+            # ИСПРАВЛЕНО: Используем тот же подход, что и в thief_handler.py
             user_purchases = ShopRepository.get_user_purchases(db, user_id)
 
-            if self.POLICE_PRIVILEGE_ID in user_purchases:
-                return await self._check_privilege_expiry(db, user_id, self.POLICE_PRIVILEGE_ID)
+            self.logger.info(f"📦 Привилегии пользователя {user_id}: {user_purchases}")
 
+            # Проверяем наличие привилегии полицейского
+            if self.POLICE_PRIVILEGE_ID in user_purchases:
+                self.logger.info(f"✅ User {user_id} имеет привилегию полицейского")
+                # Проверяем срок действия
+                is_valid = await self._check_privilege_expiry(db, user_id, self.POLICE_PRIVILEGE_ID)
+                self.logger.info(f"📅 Привилегия полицейского действительна: {is_valid}")
+                return is_valid
+
+            self.logger.info(f"❌ User {user_id} НЕ имеет привилегию полицейского")
             return False
+
         except Exception as e:
-            self.logger.error(f"Error checking police permission: {e}")
+            self.logger.error(f"❌ Ошибка проверки прав полицейского: {e}")
             return False
         finally:
             db.close()
 
     async def _check_thief_permission(self, user_id: int) -> bool:
-        """Проверяет, есть ли у пользователя права Вора в законе"""
+        """Проверяет, есть ли у пользователя права вора в законе"""
         db = next(get_db())
         try:
+            self.logger.info(f"🔍 Проверка прав вора для пользователя {user_id}")
+
+            # ИСПРАВЛЕНО: Используем тот же подход, что и в thief_handler.py
             user_purchases = ShopRepository.get_user_purchases(db, user_id)
 
-            if self.THIEF_PRIVILEGE_ID in user_purchases:
-                return await self._check_privilege_expiry(db, user_id, self.THIEF_PRIVILEGE_ID)
+            self.logger.info(f"📦 Привилегии пользователя {user_id}: {user_purchases}")
 
+            # Проверяем наличие привилегии вора
+            if self.THIEF_PRIVILEGE_ID in user_purchases:
+                self.logger.info(f"✅ User {user_id} имеет привилегию вора")
+                # Проверяем срок действия
+                is_valid = await self._check_privilege_expiry(db, user_id, self.THIEF_PRIVILEGE_ID)
+                self.logger.info(f"📅 Привилегия вора действительна: {is_valid}")
+                return is_valid
+
+            self.logger.info(f"❌ User {user_id} НЕ имеет привилегию вора")
             return False
+
         except Exception as e:
-            self.logger.error(f"Error checking thief permission: {e}")
+            self.logger.error(f"❌ Ошибка проверки прав вора: {e}")
             return False
         finally:
             db.close()
@@ -76,15 +101,20 @@ class PoliceHandler:
                 {"user_id": user_id, "item_id": privilege_id}
             ).fetchone()
 
+            self.logger.info(f"📅 Проверка срока привилегии {privilege_id} для пользователя {user_id}: {result}")
+
             if result and result[0]:
                 # Если есть срок действия, проверяем его
-                return result[0] > datetime.now()
+                is_valid = result[0] > datetime.now()
+                self.logger.info(f"⏰ Срок привилегии: {result[0]}, сейчас: {datetime.now()}, действительна: {is_valid}")
+                return is_valid
 
-            # Если срока нет, привилегия действует вечно
+            # Если срока нет или запись не найдена, привилегия действует вечно
+            self.logger.info(f"∞ Привилегия {privilege_id} для пользователя {user_id} бессрочная")
             return True
 
         except Exception as e:
-            self.logger.error(f"Error checking privilege expiry: {e}")
+            self.logger.error(f"❌ Ошибка проверки срока привилегии: {e}")
             return True
 
     def _parse_arrest_time(self, text: str) -> int:
@@ -120,9 +150,12 @@ class PoliceHandler:
 
             # Ограничиваем время ареста
             minutes = max(self.MIN_ARREST_MINUTES, min(minutes, self.MAX_ARREST_MINUTES))
+
+            self.logger.info(f"⏰ Парсинг времени ареста: '{text}' -> {minutes} минут")
             return minutes
 
-        except (ValueError, IndexError):
+        except (ValueError, IndexError) as e:
+            self.logger.error(f"❌ Ошибка парсинга времени: {e}")
             return self.DEFAULT_ARREST_MINUTES
 
     def _format_time_delta(self, delta: timedelta) -> str:
@@ -164,21 +197,59 @@ class PoliceHandler:
         db = next(get_db())
         try:
             user = UserRepository.get_user_by_telegram_id(db, user_id)
-            return user is not None
+            exists = user is not None
+            self.logger.info(f"👤 Проверка существования пользователя {user_id}: {exists}")
+            return exists
         except Exception as e:
-            self.logger.error(f"Error checking user existence: {e}")
+            self.logger.error(f"❌ Ошибка проверки существования пользователя: {e}")
             return False
+        finally:
+            db.close()
+
+    async def _check_police_cooldown(self, police_id: int) -> tuple[bool, datetime | None]:
+        """Проверяет, может ли полицейский совершить арест (прошло ли 3 часа с последнего ареста)"""
+        db = next(get_db())
+        try:
+            self.logger.info(f"⏳ Проверка кулдауна для полицейского {police_id}")
+
+            # Получаем время последнего ареста этого полицейского
+            last_arrest = PoliceRepository.get_last_arrest_by_police(db, police_id)
+
+            if not last_arrest:
+                self.logger.info(f"✅ Полицейский {police_id} не совершал арестов - кулдаун пройден")
+                return True, None  # Не было арестов - можно арестовать
+
+            cooldown_end = last_arrest.arrested_at + timedelta(hours=self.POLICE_COOLDOWN_HOURS)
+            now = datetime.now()
+
+            self.logger.info(
+                f"📅 Последний арест: {last_arrest.arrested_at}, конец кулдауна: {cooldown_end}, сейчас: {now}")
+
+            if now >= cooldown_end:
+                self.logger.info(f"✅ Кулдаун полицейского {police_id} пройден")
+                return True, None  # КД прошел - можно арестовать
+            else:
+                time_left = cooldown_end - now
+                self.logger.info(f"❌ Кулдаун полицейского {police_id} еще действует, осталось: {time_left}")
+                return False, cooldown_end  # КД еще действует
+
+        except Exception as e:
+            self.logger.error(f"❌ Ошибка проверки кулдауна полицейского: {e}")
+            return True, None  # В случае ошибки разрешаем арест
         finally:
             db.close()
 
     async def arrest_user(self, message: types.Message):
         """Команда 'арест' - арестовывает пользователя"""
         try:
+            self.logger.info(f"🚨 Начало ареста от пользователя {message.from_user.id}")
+
             # Проверяем и создаем таблицу если нужно
             await self._ensure_table_exists()
 
             # Проверяем права доступа полицейского
-            if not await self._check_police_permission(message.from_user.id):
+            police_id = message.from_user.id
+            if not await self._check_police_permission(police_id):
                 await message.reply(
                     "🚫 Эта команда доступна только для <b>Полицейских</b>!\n\n"
                     "💎 Для получения привилегии обратитесь к администратору:\n"
@@ -194,6 +265,8 @@ class PoliceHandler:
             police = message.from_user
             target = message.reply_to_message.from_user
 
+            self.logger.info(f"👮 Полицейский {police.id} пытается арестовать {target.id}")
+
             # Проверяем, не пытается ли пользователь арестовать самого себя
             if police.id == target.id:
                 await message.reply("❌ Нельзя арестовать самого себя!")
@@ -208,6 +281,22 @@ class PoliceHandler:
             # Проверяем, существует ли пользователь в базе
             if not await self._check_user_exists(target.id):
                 await message.reply("❌ Пользователь не найден в базе данных!")
+                return
+
+            # ПРОВЕРЯЕМ КУЛДАУН ПОЛИЦЕЙСКОГО
+            can_arrest, cooldown_end = await self._check_police_cooldown(police.id)
+            if not can_arrest and cooldown_end:
+                time_left = cooldown_end - datetime.now()
+                time_left_str = self._format_time_delta(time_left)
+
+                await message.reply(
+                    f"⏳ <b>Полицейский на перезарядке!</b>\n\n"
+                    f"👮 Полицейский: {police.full_name}\n"
+                    f"⏰ Следующий арест через: {time_left_str}\n"
+                    f"🕐 Время следующего ареста: {cooldown_end.strftime('%H:%M')}\n\n"
+                    f"<i>Каждый полицейский может арестовать только одного вора в течение 3 часов</i>",
+                    parse_mode="HTML"
+                )
                 return
 
             # ПРОВЕРЯЕМ, ЕСТЬ ЛИ У ЦЕЛИ ПРИВИЛЕГИЯ "ВОР В ЗАКОНЕ"
@@ -241,8 +330,11 @@ class PoliceHandler:
                     return
 
                 # Арестовываем пользователя
+                self.logger.info(
+                    f"💾 Сохранение ареста в базу данных: вор {target.id}, полицейский {police.id}, время {minutes} минут")
                 PoliceRepository.arrest_user(db, target.id, police.id, release_time)
                 db.commit()
+                self.logger.info("✅ Арест успешно сохранен в базу данных")
 
                 time_str = self._format_time_left(minutes)
 
@@ -252,21 +344,22 @@ class PoliceHandler:
                     f"🎯 Вор в законе: {target.full_name}\n"
                     f"⏰ Срок: {time_str}\n"
                     f"🕐 Освобождение: {release_time.strftime('%H:%M')}\n\n"
+                    f"⏳ <b>Следующий арест через 3 часа</b>\n"
                     f"<i>Для проверки ареста используй /проверить</i>",
                     parse_mode="HTML"
                 )
 
-                self.logger.info(f"Police {police.id} arrested thief {target.id} for {minutes} minutes")
+                self.logger.info(f"✅ Полицейский {police.id} арестовал вора {target.id} на {minutes} минут")
 
             except Exception as e:
                 db.rollback()
-                self.logger.error(f"Database error in arrest_user: {e}")
+                self.logger.error(f"❌ Ошибка базы данных в arrest_user: {e}")
                 await message.reply("❌ Произошла ошибка при аресте. Попробуйте позже.")
             finally:
                 db.close()
 
         except Exception as e:
-            self.logger.error(f"Error in arrest_user: {e}")
+            self.logger.error(f"❌ Ошибка в arrest_user: {e}")
             await message.reply("❌ Произошла ошибка при обработке команды.")
 
     async def unarrest_user(self, message: types.Message):
@@ -429,11 +522,23 @@ class PoliceHandler:
                     if await self._check_thief_permission(arrest.user_id):
                         thieves_arrested += 1
 
+                # Проверяем кулдаун полицейского
+                can_arrest, cooldown_end = await self._check_police_cooldown(user_id)
+                cooldown_info = ""
+
+                if not can_arrest and cooldown_end:
+                    time_left = cooldown_end - datetime.now()
+                    time_left_str = self._format_time_delta(time_left)
+                    cooldown_info = f"⏳ Следующий арест через: {time_left_str}\n"
+                else:
+                    cooldown_info = "✅ Готов к следующему аресту\n"
+
                 result = (
                     f"👮 <b>СТАТИСТИКА ПОЛИЦЕЙСКОГО</b>\n\n"
                     f"📛 Имя: {message.from_user.full_name}\n"
                     f"🔒 Арестовано воров: {thieves_arrested}\n"
-                    f"🔒 Всего активных арестов в системе: {len(active_arrests)}\n\n"
+                    f"🔒 Всего активных арестов в системе: {len(active_arrests)}\n"
+                    f"{cooldown_info}\n"
                 )
 
                 if my_active_arrests:
@@ -555,4 +660,4 @@ def register_police_handlers(dp: Dispatcher):
         state="*"
     )
 
-    logger.info("✅ Обработчики 'полиция' зарегистрированы (только для воров)")
+    logger.info("✅ Обработчики 'полиция' зарегистрированы")

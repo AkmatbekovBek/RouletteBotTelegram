@@ -856,6 +856,7 @@ class RouletteHandler:
 
         limit_info = roulette_limit_manager.get_spin_info_for_chat(user_id, chat_id)
 
+        # Проверяем статус лимита
         if not roulette_limit_manager.has_roulette_limit_removed_in_chat(user_id, chat_id):
             keyboard = InlineKeyboardMarkup().add(
                 InlineKeyboardButton("🛍️ Купить снятие лимита", callback_data="back_to_shop")
@@ -865,7 +866,8 @@ class RouletteHandler:
                 reply_markup=keyboard
             )
         else:
-            await message.answer(limit_info)
+            # Если лимит снят, показываем только информацию
+            await message.answer(f"✅ Лимит снят!\n\n{limit_info}")
 
     # -------------------------------------------------------------------------
     # ОБРАБОТКА СТАВОК
@@ -1139,6 +1141,11 @@ class RouletteHandler:
             await call.answer("❌ Недействительная кнопка!")
             return
 
+        # Обработка кнопки "back_to_shop"
+        if data == "back_to_shop":
+            await self._handle_shop_callback(call, user_id, chat_id)
+            return
+
         async with DatabaseManager.db_session() as db:
             user = UserRepository.get_user_by_telegram_id(db, user_id)
             if not user:
@@ -1155,6 +1162,25 @@ class RouletteHandler:
             except Exception as e:
                 logger.error(f"❌ Ошибка обработки callback: {e}")
                 await call.answer("❌ Ошибка обработки кнопки")
+
+    async def _handle_shop_callback(self, call: types.CallbackQuery, user_id: int, chat_id: int):
+        """Обработка перехода в магазин"""
+        try:
+            from handlers.shop import shop_handler  # Или ваш импорт магазина
+
+            # Закрываем текущее сообщение
+            await call.message.delete()
+
+            # Показываем магазин
+            await shop_handler.show_shop(call.message)
+
+        except ImportError:
+            await call.answer("❌ Магазин временно недоступен")
+        except Exception as e:
+            logger.error(f"Ошибка при переходе в магазин: {e}")
+            await call.answer("❌ Ошибка при переходе в магазин")
+
+
 
     async def _route_callback(self, prefix: str, callback_data: str, call: types.CallbackQuery,
                               user_id: int, chat_id: int):
@@ -1472,34 +1498,6 @@ class RouletteHandler:
             logger.error(f"⚠️ Ошибка добавления рекорда: {e}")
 
     # -------------------------------------------------------------------------
-    # ИСТОРИЯ СТАВОК
-    # -------------------------------------------------------------------------
-
-    async def show_bet_history(self, message: types.Message, show_all: bool = False):
-        """Показать историю ставок пользователя"""
-        user_id = message.from_user.id
-
-        async with DatabaseManager.db_session() as db:
-            limit = 50 if show_all else 10
-            history = RouletteRepository.get_user_bet_history(db, user_id, limit)
-
-            if not history:
-                await message.answer("📊 История ставок:\nПока нет записей о ставках")
-                return
-
-            history_text = "📊 История ваших ставок:\n\n"
-            for i, bet in enumerate(history, 1):
-                result_emoji = "✅" if bet.is_win else "❌"
-                bet_type_info = f" ({bet.bet_type}: {bet.bet_value})" if bet.bet_type else ""
-                profit_sign = "+" if bet.profit > 0 else ""
-                history_text += f"{i}. {result_emoji} {bet.amount} монет{bet_type_info} - {profit_sign}{bet.profit}\n"
-
-            if not show_all and len(history) >= 10:
-                history_text += f"\n📈 Показано последние 10 ставок. Используйте !история для полной истории."
-
-            await message.answer(history_text)
-
-    # -------------------------------------------------------------------------
     # ПОВТОРИТЬ/УДВОИТЬ
     # -------------------------------------------------------------------------
 
@@ -1650,6 +1648,11 @@ class RouletteHandler:
         if not can_spin:
             limit_info = roulette_limit_manager.get_spin_info_for_chat(user_id, chat_id)
 
+            # Проверяем, снят ли уже лимит
+            if roulette_limit_manager.has_roulette_limit_removed_in_chat(user_id, chat_id):
+                return True
+
+            # Показываем кнопку покупки только если лимит НЕ снят
             keyboard = InlineKeyboardMarkup().add(
                 InlineKeyboardButton("🛍️ Купить снятие лимита", callback_data="back_to_shop")
             )
@@ -1723,15 +1726,7 @@ def register_roulette_handlers(dp):
         lambda m: m.text and m.text.lower() == "!лог"
     )
 
-    # История ставок
-    dp.register_message_handler(
-        lambda m: handler.show_bet_history(m, False),
-        lambda m: m.text and m.text.lower() in ["история", "ист", "history"]
-    )
-    dp.register_message_handler(
-        lambda m: handler.show_bet_history(m, True),
-        lambda m: m.text and m.text.lower() in ["!история", "!ист", "!history"]
-    )
+
 
     # Лимиты рулетки
     dp.register_message_handler(

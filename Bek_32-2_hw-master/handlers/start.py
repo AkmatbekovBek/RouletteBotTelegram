@@ -26,6 +26,13 @@ from main import logger
 # =============================================================================
 
 @dataclass(frozen=True)
+class ReferralConfig:
+    """Конфигурация реферальной системы"""
+    REFERRER_BONUS: int = 500000  # 500K для пригласившего
+    REFERRED_BONUS: int = 100000   # 100K для приглашенного
+
+
+@dataclass(frozen=True)
 class PrivilegeConfig:
     """Конфигурация привилегий"""
     PRIVILEGE_NAMES: Dict[int, str] = None
@@ -140,10 +147,11 @@ class PrivilegeService:
 class ReferralService:
     """Сервис для работы с реферальной системой"""
 
-    __slots__ = ('_user_formatter',)
+    __slots__ = ('_user_formatter', '_config')
 
     def __init__(self, user_formatter: UserFormatter):
         self._user_formatter = user_formatter
+        self._config = ReferralConfig()
 
     async def process_referral(self, message: types.Message, payload: str) -> bool:
         """Обработка реферальной ссылки. Возвращает True если реферал обработан"""
@@ -161,10 +169,11 @@ class ReferralService:
 
                 user = UserRepository.get_user_by_telegram_id(db, message.from_user.id)
                 if user:
-                    user.coins += 1000
+                    # Начисляем 100K приглашенному пользователю
+                    user.coins += self._config.REFERRED_BONUS
                     db.commit()
 
-                    asyncio.create_task(self._send_referral_welcome(message.from_user.id, owner))
+                    asyncio.create_task(self._send_referral_welcome(message.from_user.id, owner.telegram_id))
                     return True
 
             except Exception as e:
@@ -178,18 +187,21 @@ class ReferralService:
         try:
             db = next(get_db())
             try:
+                # Получаем пользователей из базы данных
                 referred_db_user = UserRepository.get_user_by_telegram_id(db, referred_user_id)
                 referrer_db_user = UserRepository.get_user_by_telegram_id(db, referrer_user_id)
 
                 if referred_db_user and referrer_db_user:
-                    referred_db_user.coins += 10000
-                    referrer_db_user.coins += 5000
+                    # Начисляем бонусы по новой схеме
+                    referred_db_user.coins += self._config.REFERRED_BONUS  # 100K приглашенному
+                    referrer_db_user.coins += self._config.REFERRER_BONUS  # 500K пригласившему
                     db.commit()
 
                     from aiogram import Bot
                     bot = Bot.get_current()
 
                     try:
+                        # Получаем информацию о пользователях из Telegram
                         referred_user = await bot.get_chat(referred_user_id)
                         referrer_user = await bot.get_chat(referrer_user_id)
 
@@ -199,27 +211,41 @@ class ReferralService:
                         welcome_text = (
                             f"🎉 Добро пожаловать, {referred_name}!\n\n"
                             f"💎 Вы были приглашены пользователем {referrer_name}\n"
-                            f"💰 Вам начислено: 10,000 монет\n"
-                            f"💝 Пригласившему начислено: 5,000 монет\n\n"
+                            f"💰 Вам начислено: {self._config.REFERRED_BONUS:,} монет\n"
+                            f"💝 Пригласившему начислено: {self._config.REFERRER_BONUS:,} монет\n\n"
                             f"🎁 Используйте /start для начала работы!"
-                        )
+                        ).replace(",", " ")
 
                         await bot.send_message(
                             chat_id=referred_user_id,
                             text=welcome_text
                         )
 
+                        # Также уведомляем пригласившего о бонусе
+                        notification_text = (
+                            f"🎉 По вашей ссылке зарегистрировался новый пользователь!\n\n"
+                            f"👤 Новый участник: {referred_name}\n"
+                            f"💰 Вам начислено: {self._config.REFERRER_BONUS:,} монет\n"
+                            f"💝 Новому пользователю начислено: {self._config.REFERRED_BONUS:,} монет"
+                        ).replace(",", " ")
+
+                        await bot.send_message(
+                            chat_id=referrer_user_id,
+                            text=notification_text
+                        )
+
                         logger.info(f"✅ Реферальное приветствие отправлено пользователю {referred_user_id}")
 
                     except Exception as e:
-                        logger.warning(f"⚠️ Не удалось получить информацию о пользователях: {e}")
+                        logger.warning(f"⚠️ Не удалось получить информацию о пользователях из Telegram: {e}")
+                        # Альтернативный текст, если не удалось получить информацию из Telegram
                         welcome_text = (
                             f"🎉 Добро пожаловать!\n\n"
                             f"💎 Вы были приглашены по реферальной ссылке\n"
-                            f"💰 Вам начислено: 10,000 монет\n"
-                            f"💝 Пригласившему начислено: 5,000 монет\n\n"
+                            f"💰 Вам начислено: {self._config.REFERRED_BONUS:,} монет\n"
+                            f"💝 Пригласившему начислено: {self._config.REFERRER_BONUS:,} монет\n\n"
                             f"🎁 Используйте /start для начала работы!"
-                        )
+                        ).replace(",", " ")
 
                         await bot.send_message(
                             chat_id=referred_user_id,
@@ -228,7 +254,7 @@ class ReferralService:
 
             except Exception as e:
                 db.rollback()
-                raise e
+                logger.error(f"❌ Ошибка при начислении бонусов рефералу: {e}")
             finally:
                 db.close()
 
@@ -438,7 +464,9 @@ class StartHandlers:
             start_text = START_MENU_TEXT.format(user=user_link).replace('*', '')
 
             if referral_processed:
-                start_text = "🎉 Вам начислено 1000 монет за переход по реферальной ссылке!\n\n" + start_text
+                # Обновляем текст с новыми суммами
+                referral_config = ReferralConfig()
+                start_text = f"🎉 Вам начислено {referral_config.REFERRED_BONUS:,} монет за переход по реферальной ссылке!\n\n".replace(",", " ") + start_text
 
             await bot.send_message(
                 chat_id=message.chat.id,
@@ -618,7 +646,7 @@ class StartHandlers:
     async def agreement_button(self, callback: types.CallbackQuery) -> None:
         """Обработчик кнопки пользовательского соглашения"""
         try:
-            file_path = r'C:\Bek_32-2_hw-master\media\Пользовательское_Соглашение_EXEZ_кириллица.pdf'
+            file_path = r'\Bek_32-2_hw-master\media\Пользовательское_Соглашение_EXEZ_кириллица.pdf'
 
             # Создаем инлайн-клавиатуру с кнопкой тех. поддержки
             from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -626,7 +654,7 @@ class StartHandlers:
             support_keyboard = InlineKeyboardMarkup(row_width=1)
             support_button = InlineKeyboardButton(
                 "🛠️ Тех. поддержка",
-                url="https://t.me/YaMusu1man"
+                url="https://t.me/EXEZTEX"
             )
             support_keyboard.add(support_button)
 
@@ -654,7 +682,7 @@ class StartHandlers:
             support_keyboard = InlineKeyboardMarkup()
             support_button = InlineKeyboardButton(
                 "🛠️ Написать в поддержку",
-                url="https://t.me/YaMusu1man"
+                url="https://t.me/EXEZTEX"
             )
             support_keyboard.add(support_button)
 
@@ -670,6 +698,33 @@ class StartHandlers:
         except Exception as e:
             logging.error(f"❌ Ошибка в support_button: {e}")
             await callback.answer("❌ Ошибка загрузки информации о поддержке", show_alert=True)
+
+    async def cooperation_button(self, callback: types.CallbackQuery) -> None:
+        """Обработчик кнопки сотрудничества"""
+        try:
+            # Создаем кнопку для перехода к сотрудничеству
+            from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+            cooperation_keyboard = InlineKeyboardMarkup()
+            cooperation_button = InlineKeyboardButton(
+                "🤝 Написать по сотрудничеству",
+                url="https://t.me/YaMusu1man"
+            )
+            cooperation_keyboard.add(cooperation_button)
+
+            await callback.message.edit_text(
+                "🤝 <b>Сотрудничество и разработка</b>\n\n"
+                "По вопросам сотрудничества, разработки ботов "
+                "или интеграций - напишите нашему специалисту:\n\n"
+                "💼 <b>@YaMusu1man</b>\n\n"
+                "Мы открыты к новым проектам и предложениям! 🚀",
+                parse_mode=types.ParseMode.HTML,
+                reply_markup=cooperation_keyboard
+            )
+            await callback.answer()
+        except Exception as e:
+            logging.error(f"❌ Ошибка в cooperation_button: {e}")
+            await callback.answer("❌ Ошибка загрузки информации о сотрудничестве", show_alert=True)
 
 
 # =============================================================================
@@ -709,7 +764,9 @@ def register_start_handler(dp: Dispatcher) -> None:
         "other_bots": handlers.other_bots_button,
         "donate": handlers.donate_button,
         "agreement": handlers.agreement_button,
-        "support": handlers.support_button,  # Добавляем новую кнопку
+        "support": handlers.support_button,
+        "cooperation": handlers.cooperation_button,
+
     }
 
     for callback_data, handler in callback_handlers.items():

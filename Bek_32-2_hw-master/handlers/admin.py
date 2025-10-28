@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 from typing import List, Optional, Dict, Any, Tuple
 from contextlib import contextmanager
 from datetime import datetime
@@ -28,7 +29,7 @@ PRIVILEGES = {
 
 # Константы для предметов магазина
 SHOP_ITEMS = {
-    "unlimited_transfers": 1
+    "unlimited_transfers": 3
 }
 
 
@@ -202,6 +203,142 @@ class AdminHandler:
 
         await message.answer(help_text, parse_mode="HTML")
 
+    import os
+    from pathlib import Path
+
+    async def _send_admin_action_notification(self, bot, user_id: int, action_type: str,
+                                              amount: int = None, new_balance: int = None,
+                                              privilege_info: dict = None):
+        """Отправляет красивое уведомление о действии админа в ЛС пользователю"""
+        try:
+            # Сначала проверяем и создаем пользователя если нужно
+            with self._db_session() as db:
+                user = UserRepository.get_user_by_telegram_id(db, user_id)
+                if not user:
+                    # Создаем пользователя если его нет
+                    try:
+                        # Пытаемся получить информацию о пользователе через Telegram API
+                        chat_member = await bot.get_chat(user_id)
+                        username = chat_member.username
+                        first_name = chat_member.first_name or "Пользователь"
+
+                        user = UserRepository.create_user_safe(
+                            db,
+                            user_id,
+                            first_name,
+                            username
+                        )
+                        self.logger.info(f"✅ Создан новый пользователь {user_id} для доната")
+                    except Exception as user_info_error:
+                        self.logger.warning(
+                            f"Не удалось получить информацию о пользователе {user_id}: {user_info_error}")
+                        # Создаем с базовыми данными
+                        user = UserRepository.create_user_safe(
+                            db,
+                            user_id,
+                            "Пользователь",
+                            None
+                        )
+                    db.commit()
+
+            # Остальной код метода без изменений...
+            action_texts = {
+                "donate": "🎉 Вам зачислен донат!",
+                "add_coins": "💰 Вам начислены монеты!",
+                "privilege": "🎁 Вам выдана привилегия!",
+                "unlimit": "🔐 Вам сняли лимит переводов!",
+                "coins_and_privilege": "🎊 Вам начислены монеты и привилегия!"
+            }
+
+            # Основной текст уведомления
+            notification_text = f"<b>{action_texts.get(action_type, '🎁 Вам начислена награда!')}</b>\n\n"
+
+            # Добавляем информацию о монетах если есть
+            if amount is not None and new_balance is not None:
+                notification_text += f"💝 <b>+{self._format_number(amount)} монет</b>\n"
+                notification_text += f"💳 Теперь на вашем балансе: <b>{self._format_number(new_balance)} монет</b>\n\n"
+
+            # Добавляем информацию о привилегии если есть
+            if privilege_info:
+                duration = f"{privilege_info['default_days']} дней" if privilege_info.get('extendable') else "навсегда"
+                notification_text += f"🎁 <b>Привилегия: {privilege_info['name']}</b>\n"
+                notification_text += f"⏰ Срок: {duration}\n\n"
+
+            notification_text += "✨ <i>Спасибо за вашу активность!</i>"
+
+            # Определяем путь к изображению
+            try:
+                # Получаем абсолютный путь к проекту
+                project_root = Path(__file__).parent.parent
+                media_dir = project_root / "media"
+
+                # Проверяем разные возможные имена файлов
+                possible_filenames = [
+                    "donate.jpg",
+                    "donate.png",
+                    "donate.png",
+                    "donate.jpg",
+                    "donate.jpg"
+                ]
+
+                photo_path = None
+                for filename in possible_filenames:
+                    potential_path = media_dir / filename
+                    if potential_path.exists():
+                        photo_path = potential_path
+                        break
+
+                if photo_path:
+                    self.logger.info(f"Using photo: {photo_path}")
+                    # Открываем файл и отправляем как фото
+                    with open(photo_path, 'rb') as photo:
+                        await bot.send_photo(
+                            chat_id=user_id,
+                            photo=photo,
+                            caption=notification_text,
+                            parse_mode="HTML"
+                        )
+                    self.logger.info(f"Successfully sent photo notification to user {user_id}")
+                else:
+                    # Если файл не найден, создаем список доступных файлов для отладки
+                    available_files = list(media_dir.glob("*.*")) if media_dir.exists() else []
+                    self.logger.warning(f"Photo not found. Available files in {media_dir}: {available_files}")
+                    raise FileNotFoundError("No suitable photo file found")
+
+            except FileNotFoundError as e:
+                self.logger.warning(f"Photo file not found: {e}, falling back to text message")
+                # Если файл не найден, отправляем текстовое сообщение
+                await bot.send_message(
+                    chat_id=user_id,
+                    text=notification_text,
+                    parse_mode="HTML"
+                )
+            except Exception as photo_error:
+                self.logger.warning(f"Could not send photo, falling back to text: {photo_error}")
+                # Если не удалось отправить фото, отправляем текстовое сообщение
+                await bot.send_message(
+                    chat_id=user_id,
+                    text=notification_text,
+                    parse_mode="HTML"
+                )
+
+        except Exception as e:
+            self.logger.error(f"Error sending admin action notification to {user_id}: {e}")
+            # В случае общей ошибки все равно пытаемся отправить текстовое уведомление
+            try:
+                notification_text = f"🎉 Вам начислена награда от администратора!"
+                if amount is not None:
+                    notification_text += f"\n💰 +{self._format_number(amount)} монет"
+                if privilege_info:
+                    notification_text += f"\n🎁 {privilege_info['name']}"
+
+                await bot.send_message(
+                    chat_id=user_id,
+                    text=notification_text
+                )
+            except Exception as fallback_error:
+                self.logger.error(f"Failed to send fallback notification to {user_id}: {fallback_error}")
+
     # ========== УПРАВЛЕНИЕ АДМИНИСТРАТОРАМИ ==========
 
     async def add_admin(self, message: types.Message):
@@ -362,9 +499,32 @@ class AdminHandler:
 
             with self._db_session() as db:
                 user = UserRepository.get_user_by_telegram_id(db, user_id)
+
+                # Если пользователя нет - создаем его
                 if not user:
-                    await message.answer("❌ Пользователь не найден")
-                    return
+                    try:
+                        # Пытаемся получить информацию о пользователе через Telegram API
+                        chat_member = await message.bot.get_chat(user_id)
+                        username = chat_member.username
+                        first_name = chat_member.first_name or "Пользователь"
+
+                        user = UserRepository.create_user_safe(
+                            db, user_id,
+                            first_name=first_name,
+                            username=username
+                        )
+                        self.logger.info(f"✅ Создан новый пользователь {user_id} для операции с монетами")
+                    except Exception as user_info_error:
+                        self.logger.warning(
+                            f"Не удалось получить информацию о пользователе {user_id}: {user_info_error}")
+                        user = UserRepository.create_user_safe(
+                            db, user_id,
+                            first_name="Пользователь",
+                            username=None
+                        )
+
+                    # Обновляем текущие монеты после создания пользователя
+                    user = UserRepository.get_user_by_telegram_id(db, user_id)
 
                 current_coins = user.coins
 
@@ -403,6 +563,16 @@ class AdminHandler:
                 db.commit()
 
                 self.logger.info(f"Admin {message.from_user.id} {operation} {amount} coins for user {user_id}")
+
+                # Отправляем уведомление пользователю
+                if operation == "addcoins":
+                    await self._send_admin_action_notification(
+                        message.bot,
+                        user_id,
+                        "add_coins",
+                        amount=amount,
+                        new_balance=new_coins
+                    )
 
                 operation_names = {
                     "addcoins": "добавлено",
@@ -659,28 +829,51 @@ class AdminHandler:
                 await message.answer("❌ Количество дней не может быть отрицательным")
                 return
 
+            # ИСПРАВЛЕНИЕ: Для unlimit устанавливаем days = 0
             if privilege_type == "unlimit":
                 days = 0  # Для снятия лимита всегда навсегда
 
             with self._db_session() as db:
                 user = UserRepository.get_user_by_telegram_id(db, user_id)
+
+                # Если пользователя нет - создаем его
                 if not user:
-                    await message.answer("❌ Пользователь не найден")
-                    return
+                    try:
+                        chat_member = await message.bot.get_chat(user_id)
+                        username = chat_member.username
+                        first_name = chat_member.first_name or "Пользователь"
+                        user = UserRepository.create_user_safe(db, user_id, first_name, username)
+                        self.logger.info(f"✅ Создан новый пользователь {user_id} для выдачи привилегии")
+                    except Exception as user_info_error:
+                        self.logger.warning(
+                            f"Не удалось получить информацию о пользователе {user_id}: {user_info_error}")
+                        user = UserRepository.create_user_safe(db, user_id, "Пользователь", None)
+
+                    user = UserRepository.get_user_by_telegram_id(db, user_id)
 
                 user_purchases = ShopRepository.get_user_purchases(db, user_id)
+                # ИСПРАВЛЕНИЕ: Проверяем по правильному ID привилегии
                 if privilege["id"] in user_purchases:
                     await message.answer(f"ℹ️ У пользователя уже есть привилегия '{privilege['name']}'")
                     return
 
+                # ИСПРАВЛЕНИЕ: Сохраняем с правильным ID
                 ShopRepository.add_user_purchase(
                     db,
                     user_id,
-                    privilege["id"],
+                    privilege["id"],  # Теперь для unlimit это 3, для thief - 1
                     privilege["name"],
-                    0
+                    days if privilege["extendable"] else 0  # Для unlimit сохраняем 0
                 )
                 db.commit()
+
+                # Отправляем уведомление пользователю
+                await self._send_admin_action_notification(
+                    message.bot,
+                    user_id,
+                    "privilege",
+                    privilege_info=privilege
+                )
 
                 self.logger.info(f"Admin {message.from_user.id} gave {privilege['name']} to user {user_id}")
 
@@ -843,6 +1036,13 @@ class AdminHandler:
                     db.commit()
                     self.logger.info(
                         f"Admin {message.from_user.id} extended {privilege['name']} for user {user_id} by {days} days")
+                    # Отправляем уведомление пользователю
+                    await self._send_admin_action_notification(
+                        message.bot,
+                        user_id,
+                        "privilege",
+                        privilege_info=privilege
+                    )
 
                     response = (
                         f"✅ <b>Привилегия успешно продлена!</b>\n\n"
@@ -1181,16 +1381,25 @@ class AdminHandler:
                     await message.answer("ℹ️ У пользователя уже снят лимит переводов")
                     return
 
+                # ИСПРАВЛЕНИЕ: Используем правильный ID и название
                 ShopRepository.add_user_purchase(
                     db,
                     user_id,
-                    SHOP_ITEMS["unlimited_transfers"],
-                    PRIVILEGES["unlimit"]["name"],
+                    SHOP_ITEMS["unlimited_transfers"],  # Теперь это 3
+                    PRIVILEGES["unlimit"]["name"],  # "🔐 Снятие лимита перевода"
                     0
                 )
                 db.commit()
 
                 self.logger.info(f"Admin {message.from_user.id} removed transfer limit for user {user_id}")
+
+                # Отправляем уведомление пользователю ТОЛЬКО о снятии лимита
+                await self._send_admin_action_notification(
+                    message.bot,
+                    user_id,
+                    "unlimit",
+                    privilege_info=PRIVILEGES["unlimit"]
+                )
 
                 response = (
                     f"✅ <b>Лимит переводов успешно снят!</b>\n\n"
@@ -1206,6 +1415,7 @@ class AdminHandler:
         except Exception as e:
             self.logger.error(f"Error in remove_transfer_limit: {e}")
             await message.answer("❌ Произошла ошибка при снятии лимита")
+
 
     async def manual_cleanup(self, message: types.Message):
         """Ручная очистка данных"""
@@ -1322,10 +1532,12 @@ class AdminHandler:
                     return
 
                 user_purchases = ShopRepository.get_user_purchases(db, user_id)
+                # ИСПРАВЛЕНИЕ: Проверяем по правильному ID
                 if SHOP_ITEMS["unlimited_transfers"] not in user_purchases:
                     await message.answer("ℹ️ У пользователя уже установлен лимит переводов")
                     return
 
+                # ИСПРАВЛЕНИЕ: Удаляем по правильному ID
                 ShopRepository.remove_user_purchase(db, user_id, SHOP_ITEMS["unlimited_transfers"])
                 db.commit()
 
@@ -1345,6 +1557,145 @@ class AdminHandler:
         except Exception as e:
             self.logger.error(f"Error in add_transfer_limit: {e}")
             await message.answer("❌ Произошла ошибка при установке лимита")
+
+    async def admin_give_reward(self, message: types.Message):
+        """Выдать монеты и привилегию одновременно"""
+        if not await self._check_admin(message):
+            return
+
+        try:
+            args = message.get_args().split()
+            if len(args) < 3:
+                await message.answer(
+                    "❌ Использование: <code>/admin_reward [ID] [сумма] [привилегия]</code>\n\n"
+                    "📋 Доступные привилегии:\n"
+                    "• <code>thief</code> - 👑 Вор в законе\n"
+                    "• <code>police</code> - 👮‍♂️ Полицейский\n"
+                    "• <code>unlimit</code> - 🔐 Снятие лимита\n\n"
+                    "📝 Примеры:\n"
+                    "<code>/admin_reward 123456 5000000 thief</code>\n"
+                    "<code>/admin_reward 123456 10000000 unlimit</code>",
+                    parse_mode="HTML"
+                )
+                return
+
+            user_id = int(args[0])
+            amount = int(args[1])
+            privilege_type = args[2].lower()
+
+            if amount <= 0:
+                await message.answer("❌ Сумма должна быть положительной")
+                return
+
+            if privilege_type not in PRIVILEGES:
+                await message.answer("❌ Неизвестный тип привилегии")
+                return
+
+            privilege = PRIVILEGES[privilege_type]
+
+            with self._db_session() as db:
+                user = UserRepository.get_user_by_telegram_id(db, user_id)
+                if not user:
+                    await message.answer("❌ Пользователь не найден")
+                    return
+
+                # Добавляем монеты
+                current_coins = user.coins
+                new_coins = current_coins + amount
+                UserRepository.update_user_balance(db, user_id, new_coins)
+
+                # Создаем транзакцию
+                TransactionRepository.create_transaction(
+                    db=db,
+                    from_user_id=None,
+                    to_user_id=user_id,
+                    amount=amount,
+                    description="админ награда"
+                )
+
+                # Выдаем привилегию
+                user_purchases = ShopRepository.get_user_purchases(db, user_id)
+                privilege_given = False
+
+                if privilege["id"] not in user_purchases:
+                    ShopRepository.add_user_purchase(
+                        db,
+                        user_id,
+                        privilege["id"],
+                        privilege["name"],
+                        privilege["default_days"] if privilege["extendable"] else 0
+                    )
+                    privilege_given = True
+                else:
+                    # Если привилегия уже есть - продлеваем если можно
+                    if privilege["extendable"]:
+                        ShopRepository.extend_user_purchase(
+                            db,
+                            user_id,
+                            privilege["id"],
+                            privilege["default_days"]
+                        )
+                        privilege_given = True
+
+                db.commit()
+
+                # Отправляем уведомление админу
+                admin_response = (
+                    f"✅ <b>Награда успешно выдана!</b>\n\n"
+                    f"👤 Пользователь: {user.first_name or 'Без имени'}\n"
+                    f"🆔 ID: <code>{user_id}</code>\n"
+                    f"💰 Сумма: {self._format_number(amount)} монет\n"
+                    f"💳 Новый баланс: {self._format_number(new_coins)} монет\n"
+                    f"🎁 Привилегия: {privilege['name']}"
+                )
+
+                await message.answer(admin_response, parse_mode="HTML")
+
+                # Отправляем красивое уведомление в ЛС пользователю
+                await self._send_admin_action_notification(
+                    message.bot,
+                    user_id,
+                    "coins_and_privilege",
+                    amount=amount,
+                    new_balance=new_coins,
+                    privilege_info=privilege
+                )
+
+                self.logger.info(f"Admin {message.from_user.id} gave reward to user {user_id}")
+
+        except ValueError:
+            await message.answer("❌ Неверный формат. ID и сумма должны быть числами")
+        except Exception as e:
+            self.logger.error(f"Error in admin_give_reward: {e}")
+            await message.answer("❌ Произошла ошибка при выдаче награды")
+
+
+    async def _ensure_user_exists(self, db, user_id: int, bot=None) -> bool:
+        """Гарантирует что пользователь существует в базе"""
+        user = UserRepository.get_user_by_telegram_id(db, user_id)
+        if user:
+            return True
+
+        try:
+            # Пытаемся получить информацию о пользователе
+            first_name = "Пользователь"
+            username = None
+
+            if bot:
+                try:
+                    chat_member = await bot.get_chat(user_id)
+                    first_name = chat_member.first_name or "Пользователь"
+                    username = chat_member.username
+                except Exception as chat_error:
+                    self.logger.warning(f"Could not get chat info for {user_id}: {chat_error}")
+
+            UserRepository.create_user_safe(db, user_id, first_name, username)
+            self.logger.info(f"✅ Создан новый пользователь {user_id}")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"❌ Ошибка создания пользователя {user_id}: {e}")
+            return False
 
 
 def register_admin_handlers(dp: Dispatcher):
@@ -1391,7 +1742,8 @@ def register_admin_handlers(dp: Dispatcher):
     dp.register_message_handler(handler.remove_privilege, Command("admin_remove_privilege"))
     dp.register_message_handler(handler.list_privileges, Command("admin_privileges"))
     dp.register_message_handler(handler.extend_privilege, Command("admin_extend"))
-
+    # Комбинированные действия
+    dp.register_message_handler(handler.admin_give_reward, Command("admin_reward"))
     # Очистка
     dp.register_message_handler(
         handler.manual_cleanup,

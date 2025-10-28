@@ -3,6 +3,7 @@ from typing import List, Dict, Optional
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from collections import defaultdict
+from venv import logger
 
 from aiogram import Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -10,7 +11,6 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from config import bot
 from database import get_db
 from database.crud import GiftRepository, UserRepository, TransactionRepository
-from main import logger
 
 
 # =============================================================================
@@ -102,6 +102,151 @@ class UserFormatter:
         """Форматирует объект пользователя с HTML-ссылкой"""
         display_name = user.first_name or f"@{user.username}" if user.username else "Аноним"
         return UserFormatter.get_user_link_html(user.id, display_name)
+
+
+# =============================================================================
+# ДАННЫЕ ПОДАРКОВ
+# =============================================================================
+
+class GiftData:
+    """Данные подарков"""
+
+    __slots__ = ()
+
+    @staticmethod
+    def get_default_gifts():
+        """Возвращает список подарков по умолчанию"""
+        return [
+            {
+                'name': 'Кольцо',
+                'sticker': '💍',
+                'price': 5000000,
+                'compliment': '{giver} предлагает {receiver} кольцо! 💍'
+            },
+            {
+                'name': 'Бриллиант',
+                'sticker': '💎',
+                'price': 10000000,
+                'compliment': '{giver} дарит {receiver} роскошный бриллиант! 💎'
+            },
+            {
+                'name': 'Тигр',
+                'sticker': '🐯',
+                'price': 15000000,
+                'compliment': '{giver} отправляет {receiver} грозного тигра! 🐯'
+            },
+            {
+                'name': 'Панда',
+                'sticker': '🐼',
+                'price': 7000000,
+                'compliment': '{giver} отправляет {receiver} милую панду! 🐼'
+            },
+            {
+                'name': 'Цыплёнок',
+                'sticker': '🐥',
+                'price': 3000000,
+                'compliment': '{giver} дарит {receiver} милого цыплёнка! 🐥'
+            },
+            {
+                'name': 'Чебурашка',
+                'sticker': '🐻',
+                'price': 4500000,
+                'compliment': '{giver} отправляет {receiver} легендарного Чебурашку! 🐻'
+            },
+            {
+                'name': 'Кулон',
+                'sticker': '💫',
+                'price': 2500000,
+                'compliment': '{giver} дарит {receiver} элегантный кулон! 💫'
+            },
+            {
+                'name': 'Лимон',
+                'sticker': '🍋',
+                'price': 1000000,
+                'compliment': 'Ты, как лимон, всегда добавляешь яркость и свежесть в любое общение! Твоя энергия и позитив заряжают'
+            },
+            {
+                'name': 'Шаурма',
+                'sticker': '🌯',
+                'price': 150000,
+                'compliment': '{giver} угощает {receiver} вкусной шаурмой! 🌯'
+            },
+            {
+                'name': 'Хуй',
+                'sticker': '🍌',
+                'price': 1000000,
+                'compliment': '{giver} шутливо дарит {receiver} особый подарок! 🍌'
+            },
+            {
+                'name': 'Лев',
+                'sticker': '🦁',
+                'price': 4000000,
+                'compliment': '{giver} дарит {receiver} царственного льва! 🦁'
+            },
+            {
+                'name': 'Роза',
+                'sticker': '🌹',
+                'price': 1000000,
+                'compliment': '{giver} дарит {receiver} прекрасную розу! 🌹'
+            },
+            {
+                'name': 'Шоколад',
+                'sticker': '🍫',
+                'price': 5000000,
+                'compliment': '{giver} угощает {receiver} вкусным шоколадом! 🍫'
+            },
+            {
+                'name': 'Сердце',
+                'sticker': '❤️',
+                'price': 2000000,
+                'compliment': '{giver} отправляет {receiver} сердце, полное любви! ❤️'
+            },
+            {
+                'name': 'Подарок',
+                'sticker': '🎁',
+                'price': 1500000,
+                'compliment': '{giver} дарит {receiver} праздничный подарок! 🎁'
+            },
+            {
+                'name': 'Мишка',
+                'sticker': '🧸',
+                'price': 5000000,
+                'compliment': '{giver} дарит {receiver} милого мишку! 🧸'
+            }
+        ]
+
+    @staticmethod
+    async def ensure_gifts_exist():
+        """Обеспечивает наличие подарков в базе данных"""
+        try:
+            async with DatabaseManager.db_session() as db:
+                existing_gifts = GiftRepository.get_all_gifts(db)
+                existing_names = {gift.name for gift in existing_gifts}
+
+                default_gifts = GiftData.get_default_gifts()
+                created_count = 0
+
+                for gift_data in default_gifts:
+                    if gift_data['name'] not in existing_names:
+                        # Создаем подарок
+                        GiftRepository.create_gift(
+                            db=db,
+                            name=gift_data['name'],
+                            sticker=gift_data['sticker'],
+                            price=gift_data['price'],
+                            compliment=gift_data['compliment']
+                        )
+                        created_count += 1
+                        logger.info(f"✅ Создан подарок: {gift_data['name']}")
+
+                if created_count > 0:
+                    db.commit()
+                    logger.info(f"✅ Создано {created_count} подарков")
+                else:
+                    logger.info("✅ Все подарки уже существуют в базе")
+
+        except Exception as e:
+            logger.error(f"❌ Ошибка создания подарков: {e}")
 
 
 # =============================================================================
@@ -798,6 +943,12 @@ class GiftHandlers:
 # =============================================================================
 # РЕГИСТРАЦИЯ ОБРАБОТЧИКОВ
 # =============================================================================
+
+async def ensure_gifts_on_startup():
+    """Обеспечивает наличие подарков при запуске бота"""
+    logger.info("🎁 Проверка подарков в базе данных...")
+    await GiftData.ensure_gifts_exist()
+
 
 def register_gift_handlers(dp: Dispatcher):
     """Регистрация всех обработчиков подарков"""
