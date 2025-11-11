@@ -1,0 +1,13 @@
+with open('handlers/thief_handler.py', 'r') as f:
+    content = f.read()
+
+# Добавляем отладочную информацию в начало steal_money
+search_pattern = 'async def steal_money(self, message: types.Message):\\n        \\"\\"\\"Команда \\'красть\\' - попытка украсть деньги у пользователя\\"\\"\\"\\n        try:'
+replace_with = 'async def steal_money(self, message: types.Message):\\n        \\"\\"\\"Команда \\'красть\\' - попытка украсть деньги у пользователя\\"\\"\\"\\n        self.logger.info(f"🚨🚨🚨 STEAL COMMAND TRIGGERED! User: {message.from_user.id}, Text: \\'{message.text}\\'")\\n        try:'
+
+content = content.replace(search_pattern, replace_with)
+
+with open('handlers/thief_handler.py', 'w') as f:
+    f.write(content)
+
+print("✅ Дополнительная отладка добавлена!")

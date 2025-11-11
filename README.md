@@ -1,2 +1,0 @@
-# RouletteBotTelegram
-by Bek
