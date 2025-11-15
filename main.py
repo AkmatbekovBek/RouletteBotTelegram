@@ -3,8 +3,6 @@ import asyncio
 import logging
 import signal
 import sys
-from datetime import time
-import time
 
 from sqlalchemy import text
 
@@ -20,8 +18,7 @@ from config import dp
 from database import engine, SessionLocal
 from database.models import Base
 
-# Импорты обработчиков
-# В main.py измените порядок HANDLERS:
+# ✅ ДОБАВЛЕНО: police и thief — последние, чтобы не перекрывались
 HANDLERS = [
     ("start", "register_start_handler"),
     ("admin", "register_admin_handlers"),
@@ -36,8 +33,9 @@ HANDLERS = [
     ("gifts", "register_gift_handlers"),
     ("marriage_handler", "register_marriage_handlers"),
     ("roulette", "register_roulette_handlers"),
-    ("police_handler", "register_police_handlers"),
-    ("thief_handler", "register_thief_handlers"),
+    # ✅ ВАЖНО: police и thief — ПОСЛЕДНИМИ!
+    ("police", "register_police_handlers"),
+    ("thief", "register_thief_handlers"),
     ("bot_search_handler", "register_bot_search_handlers"),
     ("chat_handlers", "register_chat_handlers"),
     ("bot_stop_handler", "register_bot_stop_handlers"),
@@ -45,22 +43,9 @@ HANDLERS = [
 
 # Список команд для антифлуда
 THROTTLED_COMMANDS = [
-    'start',    # /start
-    'help',     # /help
-    'menu',     # /menu
-    'profile',  # /profile
-    'settings', # /settings
-    'б',        # текстовые команды
-    'Б',        # текстовые команды
-    'профиль',  # текстовые команды
-    'рулетка',  # текстовые команды
-    'донат',    # текстовые команды
-    'подарки',  # текстовые команды
-    'магазин',  # текстовые команды
-    'ссылки',   # текстовые команды
-    'баланс',   # текстовые команды
-    'топ',      # текстовые команды
-    'перевод',  # текстовые команды
+    'start', 'help', 'menu', 'profile', 'settings',
+    'б', 'Б', 'профиль', 'рулетка', 'донат', 'подарки',
+    'магазин', 'ссылки', 'баланс', 'топ', 'перевод',
 ]
 
 # Настройка логирования
@@ -82,11 +67,9 @@ mute_ban_manager = None
 def setup_database() -> bool:
     """Настройка базы данных (синхронная)"""
     try:
-        # Создаем таблицы
         Base.metadata.create_all(bind=engine)
         logger.info("✅ Все таблицы базы данных созданы")
 
-        # Проверяем подключение (синхронно) с использованием text()
         db = SessionLocal()
         try:
             db.execute(text("SELECT 1"))
@@ -142,7 +125,7 @@ async def setup_middleware_first():
         setup_throttling(
             dp,
             throttled_commands=THROTTLED_COMMANDS,
-            limit=2  # 2 секунды для тестирования
+            limit=2
         )
         logger.info(f"✅ ThrottlingMiddleware зарегистрирован для {len(THROTTLED_COMMANDS)} команд")
 
@@ -165,7 +148,6 @@ def register_all_handlers():
             module = __import__(f"handlers.{module_name}", fromlist=[register_func_name])
             register_func = getattr(module, register_func_name)
 
-            # Для mute_ban сохраняем менеджер для использования в middleware
             if module_name == "mute_ban":
                 mute_ban_manager = register_func(dp)
             else:
@@ -189,7 +171,6 @@ async def setup_bot_ban_middleware(mute_ban_manager):
         bot_ban_middleware = BotBanMiddleware(mute_ban_manager)
         dp.middleware.setup(bot_ban_middleware)
 
-        # Устанавливаем связь между менеджером и middleware
         mute_ban_manager.bot_ban_manager.set_middleware(bot_ban_middleware)
 
         logger.info("✅ BotBanMiddleware зарегистрирован")
@@ -202,18 +183,15 @@ async def setup_bot_ban_middleware(mute_ban_manager):
 async def start_cleanup_tasks(mute_ban_manager):
     """Запуск задач очистки и проверки банов"""
     try:
-        # Запускаем планировщик очистки БД
         global cleanup_scheduler
         cleanup_scheduler = CleanupScheduler()
         asyncio.create_task(cleanup_scheduler.start_daily_cleanup())
         logger.info("✅ Планировщик очистки БД запущен")
 
-        # Запускаем задачи проверки мутов/банов если есть менеджер
         if mute_ban_manager:
             mute_ban_manager.start_cleanup_tasks(dp.bot)
             logger.info("✅ Задачи проверки мутов/банов запущены")
 
-            # Восстанавливаем активные муты после перезапуска
             await mute_ban_manager.restore_mutes_after_restart(dp.bot)
             logger.info("✅ Активные муты восстановлены после перезапуска")
 
@@ -226,7 +204,6 @@ async def on_startup(_):
     """Действия при запуске бота - ПРАВИЛЬНЫЙ ПОРЯДОК!"""
     logger.info("🚀 Запуск бота...")
 
-    # 1. Синхронные операции с БД
     logger.info("📊 Настройка базы данных...")
     if not setup_database():
         raise RuntimeError("Не удалось настроить базу данных")
@@ -234,20 +211,16 @@ async def on_startup(_):
     logger.info("🧹 Очистка старых данных...")
     cleanup_old_limits()
 
-    # 2. СНАЧАЛА настраиваем middleware (кроме BotBanMiddleware)
     if not await setup_middleware_first():
         raise RuntimeError("Не удалось настроить middleware")
 
-    # 3. ПОТОМ регистрируем обработчики
     logger.info("📝 Регистрация обработчиков...")
     mute_ban_manager = register_all_handlers()
 
     await ensure_gifts_on_startup()
 
-    # 4. Теперь настраиваем BotBanMiddleware (нужен mute_ban_manager)
     await setup_bot_ban_middleware(mute_ban_manager)
 
-    # 5. Запуск задач очистки
     logger.info("⏰ Запуск задач очистки...")
     await start_cleanup_tasks(mute_ban_manager)
 
@@ -255,43 +228,27 @@ async def on_startup(_):
 
 
 async def on_shutdown(dp: Dispatcher):
-    """Корректное завершение работы с улучшенной обработкой ошибок"""
+    """Корректное завершение работы"""
     logger.info("🛑 Завершение работы бота...")
 
     try:
-        # Останавливаем планировщик очистки
         global cleanup_scheduler
         if cleanup_scheduler:
-            try:
-                await cleanup_scheduler.stop()
-                logger.info("✅ Планировщик очистки остановлен")
-            except Exception as e:
-                logger.error(f"❌ Ошибка остановки планировщика: {e}")
+            await cleanup_scheduler.stop()
+            logger.info("✅ Планировщик очистки остановлен")
 
-        # Останавливаем задачи мутов/банов
         global mute_ban_manager
         if mute_ban_manager:
-            try:
-                await mute_ban_manager.stop_cleanup_tasks()
-                logger.info("✅ Задачи мутов/банов остановлены")
-            except Exception as e:
-                logger.error(f"❌ Ошибка остановки задач мутов/банов: {e}")
+            await mute_ban_manager.stop_cleanup_tasks()
+            logger.info("✅ Задачи мутов/банов остановлены")
 
-        # Закрываем соединения с БД
-        try:
-            from database import engine
-            engine.dispose()
-            logger.info("✅ Соединения с БД закрыты")
-        except Exception as e:
-            logger.error(f"❌ Ошибка закрытия БД: {e}")
+        from database import engine
+        engine.dispose()
+        logger.info("✅ Соединения с БД закрыты")
 
-        # Останавливаем диспетчер
-        try:
-            await dp.storage.close()
-            await dp.storage.wait_closed()
-            logger.info("✅ Хранилище диспетчера закрыто")
-        except Exception as e:
-            logger.warning(f"⚠️ Ошибка закрытия хранилища: {e}")
+        await dp.storage.close()
+        await dp.storage.wait_closed()
+        logger.info("✅ Хранилище диспетчера закрыто")
 
     except Exception as e:
         logger.error(f"💥 Критическая ошибка при завершении: {e}")
@@ -300,13 +257,10 @@ async def on_shutdown(dp: Dispatcher):
 
 
 def main():
-    """Основная функция запуска бота без бесконечного перезапуска"""
+    """Основная функция запуска бота"""
 
-    # Регистрируем обработчики сигналов для корректного завершения
     def signal_handler(signum, frame):
-        """Улучшенный обработчик сигналов"""
         logger.info(f"📞 Получен сигнал {signum}. Завершение работы...")
-        # Немедленный выход без перезапуска
         sys.exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
@@ -315,7 +269,6 @@ def main():
     try:
         logger.info("🔄 Запуск бота")
 
-        # Используем стандартный запуск aiogram с увеличенным relax
         executor.start_polling(
             dp,
             skip_updates=True,
@@ -323,7 +276,7 @@ def main():
             on_shutdown=on_shutdown,
             timeout=60,
             allowed_updates=AllowedUpdates.all(),
-            relax=0.5  # Увеличено с 0.1 до 0.5 для снижения нагрузки
+            relax=0.5
         )
 
     except KeyboardInterrupt:
