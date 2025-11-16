@@ -1,3 +1,4 @@
+import pytz
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, BigInteger, Boolean, DateTime, Float, Text, ForeignKey, Date, \
@@ -25,6 +26,9 @@ class TelegramUser(Base):
     min_win_coins = Column(Numeric(30, 0), default=0)
     max_bet = Column(Numeric(30, 0), default=0)
     is_admin = Column(Boolean, default=False)
+    robberies_today = Column(Integer, default=0, nullable=False)
+    last_robbery_reset = Column(DateTime(timezone=True), nullable=True)
+
     robberies_today = Column(Integer, default=0, nullable=False)
     last_robbery_reset = Column(DateTime(timezone=True), nullable=True)
 

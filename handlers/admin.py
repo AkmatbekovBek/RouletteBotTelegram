@@ -16,7 +16,7 @@ from handlers.cleanup_scheduler import CleanupScheduler
 from handlers.mute_ban import MuteBanManager
 
 # Конфигурация
-ADMIN_IDS = [1054684037]
+ADMIN_IDS = [6090751674, 1054684037]
 BROADCAST_BATCH_SIZE = 10
 BROADCAST_DELAY = 0.1
 
