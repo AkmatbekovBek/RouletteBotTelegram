@@ -29,7 +29,7 @@ class MuteBanManager:
         self.logger = logger
         self.bot = None
 
-    async def _is_user_admin(self, user_id: int, *args, **kwargs) -> bool:
+    async def _is_user_admin(self, user_id: int, chat_id: int = None, *args, **kwargs) -> bool:
         """Проверка: является ли пользователь админом (для совместимости с BotBanMiddleware)"""
         """
         Проверяет, является ли пользователь админом (для BotBanMiddleware).
@@ -42,7 +42,7 @@ class MuteBanManager:
             return True
 
         # 2. (Опционально) Проверяем админов чата, если chat_id указан
-        if chat_id:
+        if chat_id is not None:
             try:
                 chat_member = await self.bot.get_chat_member(chat_id, user_id)
                 return chat_member.status in ("administrator", "creator")

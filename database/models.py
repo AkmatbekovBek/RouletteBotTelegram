@@ -12,6 +12,7 @@ from enum import Enum
 from database import Base
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, BigInteger, Text, Float, Index
 
+
 class TelegramUser(Base):
     __tablename__ = "telegram_users"
 
@@ -28,12 +29,12 @@ class TelegramUser(Base):
     min_win_coins = Column(Numeric(30, 0), default=0)
     max_bet = Column(Numeric(30, 0), default=0)
     is_admin = Column(Boolean, default=False)
+
+    # ИСПРАВЛЕННЫЕ СТОЛБЦЫ (убраны дубли):
     robberies_today = Column(Integer, default=0, nullable=False)
     last_robbery_reset = Column(DateTime(timezone=True), nullable=True)
-    action = Column(String, nullable=False)
-    duration_minutes = Column(Integer, nullable=True)
-    robberies_today = Column(Integer, default=0, nullable=False)
-    last_robbery_reset = Column(DateTime(timezone=True), nullable=True)
+    action = Column(String(50), nullable=True)  # Изменено на nullable=True
+    duration_minutes = Column(Integer, default=0, nullable=False)  # Изменено на default=0
 
     # Связи
     references = relationship("ReferenceUser", back_populates="owner")
