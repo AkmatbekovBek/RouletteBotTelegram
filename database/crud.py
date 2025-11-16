@@ -6,7 +6,7 @@ from sqlalchemy import and_, or_, update, select, func, desc
 from typing import Optional, List, Tuple
 from datetime import datetime, date, timedelta
 import database.models as models
-
+from .models import ModerationLog, ModerationAction
 
 class UserRepository:
     @staticmethod
@@ -2220,3 +2220,27 @@ class TelegramUserRepository:
             "INSERT INTO telegram_users (user_id, username, first_name, last_name, created_at) VALUES (?, ?, ?, ?, datetime('now'))",
             (user_id, username, first_name, last_name)
         )
+
+class ModerationLogRepository:
+    @staticmethod
+    def add_log(
+        db: Session,
+        action: ModerationAction,
+        chat_id: int,
+        user_id: int,
+        admin_id: int,
+        reason: str = "",
+        duration_minutes: Optional[int] = None
+    ):
+        log = ModerationLog(
+            action=action,
+            chat_id=chat_id,
+            user_id=user_id,
+            admin_id=admin_id,
+            reason=reason,
+            duration_minutes=duration_minutes
+        )
+        db.add(log)
+        db.commit()
+        db.refresh(log)
+        return log

@@ -11,9 +11,11 @@ from handlers.police.service import PoliceService
 def normalize_cmd(text: str) -> str:
     if not text:
         return ""
-    text = re.sub(r"^[/!]", "", text)
-    text = re.sub(r"@[\w_]+$", "", text)
-    return text.strip().lower().split()[0]
+    clean = text.strip()
+    if not clean:
+        return ""
+    words = clean.split()
+    return words[0] if words else ""
 
 
 def is_arrest_cmd(msg: types.Message):

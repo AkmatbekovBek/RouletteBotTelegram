@@ -1,11 +1,13 @@
 import pytz
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, BigInteger, Boolean, DateTime, Float, Text, ForeignKey, Date, \
+from sqlalchemy import Column, Integer, String, BigInteger, Boolean, DateTime, Float, Text, ForeignKey, Enum as SQLEnum, Date, \
     UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import Numeric
+
+from enum import Enum
 
 from database import Base
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, BigInteger, Text, Float, Index
@@ -28,7 +30,8 @@ class TelegramUser(Base):
     is_admin = Column(Boolean, default=False)
     robberies_today = Column(Integer, default=0, nullable=False)
     last_robbery_reset = Column(DateTime(timezone=True), nullable=True)
-
+    action = Column(String, nullable=False)
+    duration_minutes = Column(Integer, nullable=True)
     robberies_today = Column(Integer, default=0, nullable=False)
     last_robbery_reset = Column(DateTime(timezone=True), nullable=True)
 
@@ -341,3 +344,22 @@ class DivorceRequest(Base):
 
     def __repr__(self):
         return f"<DivorceRequest(requester={self.requester}, partner={self.partner})>"
+
+
+class ModerationAction(str, Enum):
+    MUTE = "mute"
+    BAN = "ban"
+    KICK = "kick"
+
+
+class ModerationLog(Base):
+    __tablename__ = "moderation_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    action = Column(SQLEnum(ModerationAction), nullable=False)
+    chat_id = Column(BigInteger, nullable=False)
+    user_id = Column(BigInteger, nullable=False)
+    admin_id = Column(BigInteger, nullable=False)
+    reason = Column(String, default="")
+    duration_minutes = Column(Integer, nullable=True)  # только для mute
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

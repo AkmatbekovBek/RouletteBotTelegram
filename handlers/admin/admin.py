@@ -13,7 +13,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from database import get_db
 from database.crud import UserRepository, TransactionRepository, GiftRepository, ShopRepository
 from handlers.cleanup_scheduler import CleanupScheduler
-from handlers.mute_ban import MuteBanManager
+from .mute_ban import MuteBanManager
 
 # Конфигурация
 ADMIN_IDS = [6090751674, 1054684037]
