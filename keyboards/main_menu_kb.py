@@ -13,8 +13,6 @@ def main_inline_keyboard():
         InlineKeyboardButton("Донат", callback_data="donate"),
         InlineKeyboardButton("🛠️ Тех. поддержка", callback_data="support"),
         InlineKeyboardButton("📄 Пользовательское соглашение", callback_data="agreement"),
-        InlineKeyboardButton("🤝 Сотрудничество", callback_data="cooperation"),
-
     )
 
     return keyboard

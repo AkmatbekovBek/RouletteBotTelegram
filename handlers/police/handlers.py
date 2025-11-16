@@ -9,13 +9,10 @@ from handlers.police.service import PoliceService
 
 
 def normalize_cmd(text: str) -> str:
-    if not text:
+    """Нормализует команду, обрабатывая пустые строки"""
+    if not text or not text.strip():
         return ""
-    clean = text.strip()
-    if not clean:
-        return ""
-    words = clean.split()
-    return words[0] if words else ""
+    return text.strip().lower().split()[0]
 
 
 def is_arrest_cmd(msg: types.Message):

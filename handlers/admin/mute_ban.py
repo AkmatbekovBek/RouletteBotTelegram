@@ -28,6 +28,37 @@ class MuteBanManager:
         self.active_mutes = {}  # chat_id -> {user_id: unmute_time}
         self.logger = logger
         self.bot = None
+        self.pool = None  # Добавьте это поле
+
+    # ДОБАВЬТЕ ЭТОТ МЕТОД:
+    async def check_bot_ban(self, user_id: int) -> bool:
+        """
+        Проверяет, забанен ли пользователь в боте
+        (для BotBanMiddleware)
+        """
+        try:
+            # Если у вас есть таблица bot_bans в базе данных
+            if self.pool:
+                async with self.pool.acquire() as conn:
+                    result = await conn.fetchval(
+                        "SELECT 1 FROM bot_bans WHERE user_id = $1 AND expires_at > NOW()",
+                        user_id
+                    )
+                    return result is not None
+
+            # Если таблицы нет или пул не инициализирован, возвращаем False
+            return False
+
+        except Exception as e:
+            self.logger.error(f"Ошибка при проверке бана пользователя {user_id}: {e}")
+            return False
+
+    # ДОБАВЬТЕ ЭТОТ МЕТОД ТАКЖЕ (для полноты):
+    async def is_user_banned(self, user_id: int) -> bool:
+        """
+        Альтернативное название для проверки бана
+        """
+        return await self.check_bot_ban(user_id)
 
     async def _is_user_admin(self, user_id: int, chat_id: int = None, *args, **kwargs) -> bool:
         """Проверка: является ли пользователь админом (для совместимости с BotBanMiddleware)"""

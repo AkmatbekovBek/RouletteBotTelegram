@@ -699,34 +699,6 @@ class StartHandlers:
             logging.error(f"❌ Ошибка в support_button: {e}")
             await callback.answer("❌ Ошибка загрузки информации о поддержке", show_alert=True)
 
-    async def cooperation_button(self, callback: types.CallbackQuery) -> None:
-        """Обработчик кнопки сотрудничества"""
-        try:
-            # Создаем кнопку для перехода к сотрудничеству
-            from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
-            cooperation_keyboard = InlineKeyboardMarkup()
-            cooperation_button = InlineKeyboardButton(
-                "🤝 Написать по сотрудничеству",
-                url="https://t.me/YaMusu1man"
-            )
-            cooperation_keyboard.add(cooperation_button)
-
-            await callback.message.edit_text(
-                "🤝 <b>Сотрудничество и разработка</b>\n\n"
-                "По вопросам сотрудничества, разработки ботов "
-                "или интеграций - напишите нашему специалисту:\n\n"
-                "💼 <b>@YaMusu1man</b>\n\n"
-                "Мы открыты к новым проектам и предложениям! 🚀",
-                parse_mode=types.ParseMode.HTML,
-                reply_markup=cooperation_keyboard
-            )
-            await callback.answer()
-        except Exception as e:
-            logging.error(f"❌ Ошибка в cooperation_button: {e}")
-            await callback.answer("❌ Ошибка загрузки информации о сотрудничестве", show_alert=True)
-
-
 # =============================================================================
 # РЕГИСТРАЦИЯ ОБРАБОТЧИКОВ
 # =============================================================================
@@ -765,7 +737,6 @@ def register_start_handler(dp: Dispatcher) -> None:
         "donate": handlers.donate_button,
         "agreement": handlers.agreement_button,
         "support": handlers.support_button,
-        "cooperation": handlers.cooperation_button,
 
     }
 
