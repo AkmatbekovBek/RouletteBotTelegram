@@ -80,3 +80,480 @@
 2025-11-13 04:20:28,623 - [INFO] - __main__ - (main.py).on_shutdown(299) - ✅ Бот остановлен
 2025-11-13 04:20:28,623 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).stop_polling(433) - Stop polling...
 2025-11-13 04:20:28,624 - [WARNING] - aiogram - (executor.py).start_polling(329) - Goodbye!
+2025-11-15 06:19:32,903 - [INFO] - __main__ - (main.py).main(316) - 🔄 Запуск бота
+2025-11-15 06:19:33,335 - [INFO] - aiogram - (executor.py)._welcome(362) - Bot: тестайс [@testaicebot]
+2025-11-15 06:19:33,564 - [WARNING] - aiogram - (executor.py)._skip_updates(358) - Updates were skipped successfully.
+2025-11-15 06:19:33,565 - [INFO] - __main__ - (main.py).on_startup(227) - 🚀 Запуск бота...
+2025-11-15 06:19:33,565 - [INFO] - __main__ - (main.py).on_startup(230) - 📊 Настройка базы данных...
+2025-11-15 06:19:33,796 - [INFO] - __main__ - (main.py).setup_database(87) - ✅ Все таблицы базы данных созданы
+2025-11-15 06:19:33,799 - [INFO] - __main__ - (main.py).setup_database(94) - ✅ Подключение к базе данных установлено
+2025-11-15 06:19:33,799 - [INFO] - __main__ - (main.py).on_startup(234) - 🧹 Очистка старых данных...
+2025-11-15 06:19:33,863 - [INFO] - __main__ - (main.py).cleanup_old_limits(119) - ✅ Старые записи лимитов не найдены
+2025-11-15 06:19:33,865 - [INFO] - __main__ - (main.py).setup_middleware_first(135) - 🛠️ Настройка middleware...
+2025-11-15 06:19:33,865 - [INFO] - __main__ - (main.py).setup_middleware_first(139) - ✅ AutoRegisterMiddleware зарегистрирован
+2025-11-15 06:19:33,865 - [INFO] - __main__ - (main.py).setup_middleware_first(147) - ✅ ThrottlingMiddleware зарегистрирован для 16 команд
+2025-11-15 06:19:33,865 - [INFO] - __main__ - (main.py).on_startup(242) - 📝 Регистрация обработчиков...
+2025-11-15 06:19:33,865 - [INFO] - __main__ - (main.py).register_all_handlers(158) - 🔄 Регистрация обработчиков...
+2025-11-15 06:19:33,895 - [INFO] - root - (start.py).register_start_handler(778) - ✅ Стартовые обработчики зарегистрированы
+2025-11-15 06:19:33,895 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ start обработчики зарегистрированы
+2025-11-15 06:19:33,907 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ admin обработчики зарегистрированы
+2025-11-15 06:19:33,913 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ mute_ban обработчики зарегистрированы
+2025-11-15 06:19:33,913 - [INFO] - root - (shop.py).register_shop_handlers(483) - ✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)
+2025-11-15 06:19:33,914 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ shop обработчики зарегистрированы
+2025-11-15 06:19:33,918 - [INFO] - handlers.donate - (donate.py)._init_bonus_table(128) - ✅ Таблица user_bonuses создана/проверена
+2025-11-15 06:19:33,922 - [INFO] - root - (donate.py).register_donate_handlers(955) - ✅ Донат обработчики зарегистрированы (с бонусами за привилегии)
+2025-11-15 06:19:33,923 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ donate обработчики зарегистрированы
+2025-11-15 06:19:33,926 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_main_menu
+2025-11-15 06:19:33,926 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_admin_users_list
+2025-11-15 06:19:33,926 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ callback обработчики зарегистрированы
+2025-11-15 06:19:33,930 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ reference обработчики зарегистрированы
+2025-11-15 06:19:33,934 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ transfer обработчики зарегистрированы
+2025-11-15 06:19:33,936 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ history_service обработчики зарегистрированы
+2025-11-15 06:19:33,939 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ record обработчики зарегистрированы
+2025-11-15 06:19:33,941 - [INFO] - venv - (gifts.py).register_gift_handlers(983) - ✅ Обработчики подарков зарегистрированы с группировкой подарков
+2025-11-15 06:19:33,941 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ gifts обработчики зарегистрированы
+2025-11-15 06:19:33,945 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ marriage_handler обработчики зарегистрированы
+2025-11-15 06:19:33,949 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ roulette обработчики зарегистрированы
+2025-11-15 06:19:33,951 - [INFO] - handlers.police_handler - (police_handler.py).register_police_handlers(663) - ✅ Обработчики 'полиция' зарегистрированы
+2025-11-15 06:19:33,951 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ police_handler обработчики зарегистрированы
+2025-11-15 06:19:33,953 - [INFO] - handlers.thief_handler - (thief_handler.py).register_thief_handlers(479) - ✅ Обработчики 'кража' зарегистрированы (без ареста)
+2025-11-15 06:19:33,953 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ thief_handler обработчики зарегистрированы
+2025-11-15 06:19:33,956 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(863) - ✅ Обработчики 'бот ищи' зарегистрированы (ТОЧНЫЕ команды)
+2025-11-15 06:19:33,957 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(864) - 📝 Сбор данных включен для 19 команд
+2025-11-15 06:19:33,957 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(865) - 🛡️ ID товаров защиты: [4]
+2025-11-15 06:19:33,957 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_search_handler обработчики зарегистрированы
+2025-11-15 06:19:33,959 - [INFO] - handlers.chat_handlers - (chat_handlers.py).register_chat_handlers(126) - ✅ Chat handlers registered
+2025-11-15 06:19:33,959 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ chat_handlers обработчики зарегистрированы
+2025-11-15 06:19:33,965 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).register_bot_stop_handlers(482) - ✅ Обработчики 'бот стоп' зарегистрированы (с исправленной логикой и защитой)
+2025-11-15 06:19:33,965 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_stop_handler обработчики зарегистрированы
+2025-11-15 06:19:33,965 - [INFO] - __main__ - (main.py).register_all_handlers(182) - ✅ Все обработчики зарегистрированы. Всего: 18
+2025-11-15 06:19:33,965 - [INFO] - venv - (gifts.py).ensure_gifts_on_startup(949) - 🎁 Проверка подарков в базе данных...
+2025-11-15 06:19:33,976 - [INFO] - venv - (gifts.py).ensure_gifts_exist(246) - ✅ Все подарки уже существуют в базе
+2025-11-15 06:19:33,977 - [INFO] - __main__ - (main.py).setup_bot_ban_middleware(195) - ✅ BotBanMiddleware зарегистрирован
+2025-11-15 06:19:33,977 - [INFO] - __main__ - (main.py).on_startup(251) - ⏰ Запуск задач очистки...
+2025-11-15 06:19:33,978 - [INFO] - __main__ - (main.py).start_cleanup_tasks(209) - ✅ Планировщик очистки БД запущен
+2025-11-15 06:19:33,978 - [INFO] - __main__ - (main.py).start_cleanup_tasks(214) - ✅ Задачи проверки мутов/банов запущены
+2025-11-15 06:19:33,978 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1162) - Restoring active mutes after restart...
+2025-11-15 06:19:33,978 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(214) - Restoring bot bans after restart...
+2025-11-15 06:19:33,978 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(230) - Restored 0 active bot bans
+2025-11-15 06:19:33,982 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1213) - Active mutes restoration completed
+2025-11-15 06:19:33,982 - [INFO] - __main__ - (main.py).start_cleanup_tasks(218) - ✅ Активные муты восстановлены после перезапуска
+2025-11-15 06:19:33,982 - [INFO] - __main__ - (main.py).on_startup(254) - ✅ Бот успешно запущен
+2025-11-15 06:19:33,982 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(38) - 🔄 Планировщик очистки запущен
+2025-11-15 06:19:33,983 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(54) - ⏰ Следующая очистка через 63626 секунд (17.7 часов)
+2025-11-15 06:19:33,983 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-15 06:20:31,797 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'тьфу ты'
+2025-11-15 06:20:33,398 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: '@Bb7777bbb'
+2025-11-15 06:20:43,834 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'я подумал что данил тут'
+2025-11-15 06:30:17,448 - [INFO] - __main__ - (main.py).signal_handler(308) - 📞 Получен сигнал 2. Завершение работы...
+2025-11-15 06:30:17,448 - [INFO] - __main__ - (main.py).on_shutdown(259) - 🛑 Завершение работы бота...
+2025-11-15 06:30:17,449 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(147) - 🛑 Остановка планировщика очистки...
+2025-11-15 06:30:17,449 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(156) - ✅ Планировщик очистки остановлен
+2025-11-15 06:30:17,449 - [INFO] - __main__ - (main.py).on_shutdown(267) - ✅ Планировщик очистки остановлен
+2025-11-15 06:30:17,449 - [INFO] - __main__ - (main.py).on_shutdown(276) - ✅ Задачи мутов/банов остановлены
+2025-11-15 06:30:17,450 - [INFO] - __main__ - (main.py).on_shutdown(284) - ✅ Соединения с БД закрыты
+2025-11-15 06:30:17,450 - [INFO] - __main__ - (main.py).on_shutdown(292) - ✅ Хранилище диспетчера закрыто
+2025-11-15 06:30:17,451 - [INFO] - __main__ - (main.py).on_shutdown(299) - ✅ Бот остановлен
+2025-11-15 06:30:17,451 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).stop_polling(433) - Stop polling...
+2025-11-15 06:30:17,451 - [WARNING] - aiogram - (executor.py).start_polling(329) - Goodbye!
+2025-11-16 04:55:19,062 - [INFO] - RouletteBot - (main.py).signal_handler(262) - 📞 Получен сигнал 2. Завершение работы...
+2025-11-16 04:55:19,063 - [INFO] - RouletteBot - (main.py).on_shutdown(231) - 🛑 Завершение работы бота...
+2025-11-16 04:55:19,063 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(104) - ✅ CleanupScheduler остановлен
+2025-11-16 04:55:19,063 - [INFO] - RouletteBot - (main.py).on_shutdown(237) - ✅ Планировщик очистки остановлен
+2025-11-16 04:55:19,063 - [INFO] - RouletteBot - (main.py).on_shutdown(242) - ✅ Задачи мутов/банов остановлены
+2025-11-16 04:55:19,064 - [INFO] - RouletteBot - (main.py).on_shutdown(246) - ✅ Соединения с БД закрыты
+2025-11-16 04:55:19,064 - [INFO] - RouletteBot - (main.py).on_shutdown(250) - ✅ Хранилище диспетчера закрыто
+2025-11-16 04:55:19,064 - [INFO] - RouletteBot - (main.py).on_shutdown(255) - ✅ Бот остановлен
+2025-11-16 04:55:19,064 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).stop_polling(433) - Stop polling...
+2025-11-16 04:55:19,065 - [WARNING] - aiogram - (executor.py).start_polling(329) - Goodbye!
+2025-11-16 05:21:12,227 - [INFO] - __main__ - (main.py).main(316) - 🔄 Запуск бота
+2025-11-16 05:21:12,607 - [INFO] - aiogram - (executor.py)._welcome(362) - Bot: тестайс [@testaicebot]
+2025-11-16 05:21:12,857 - [WARNING] - aiogram - (executor.py)._skip_updates(358) - Updates were skipped successfully.
+2025-11-16 05:21:12,857 - [INFO] - __main__ - (main.py).on_startup(227) - 🚀 Запуск бота...
+2025-11-16 05:21:12,857 - [INFO] - __main__ - (main.py).on_startup(230) - 📊 Настройка базы данных...
+2025-11-16 05:21:13,121 - [INFO] - __main__ - (main.py).setup_database(87) - ✅ Все таблицы базы данных созданы
+2025-11-16 05:21:13,123 - [INFO] - __main__ - (main.py).setup_database(94) - ✅ Подключение к базе данных установлено
+2025-11-16 05:21:13,123 - [INFO] - __main__ - (main.py).on_startup(234) - 🧹 Очистка старых данных...
+2025-11-16 05:21:13,156 - [INFO] - __main__ - (main.py).cleanup_old_limits(119) - ✅ Старые записи лимитов не найдены
+2025-11-16 05:21:13,158 - [INFO] - __main__ - (main.py).setup_middleware_first(135) - 🛠️ Настройка middleware...
+2025-11-16 05:21:13,158 - [INFO] - __main__ - (main.py).setup_middleware_first(139) - ✅ AutoRegisterMiddleware зарегистрирован
+2025-11-16 05:21:13,158 - [INFO] - __main__ - (main.py).setup_middleware_first(147) - ✅ ThrottlingMiddleware зарегистрирован для 16 команд
+2025-11-16 05:21:13,158 - [INFO] - __main__ - (main.py).on_startup(242) - 📝 Регистрация обработчиков...
+2025-11-16 05:21:13,159 - [INFO] - __main__ - (main.py).register_all_handlers(158) - 🔄 Регистрация обработчиков...
+2025-11-16 05:21:13,194 - [INFO] - root - (start.py).register_start_handler(778) - ✅ Стартовые обработчики зарегистрированы
+2025-11-16 05:21:13,195 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ start обработчики зарегистрированы
+2025-11-16 05:21:13,208 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ admin обработчики зарегистрированы
+2025-11-16 05:21:13,211 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ mute_ban обработчики зарегистрированы
+2025-11-16 05:21:13,212 - [INFO] - root - (shop.py).register_shop_handlers(483) - ✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)
+2025-11-16 05:21:13,212 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ shop обработчики зарегистрированы
+2025-11-16 05:21:13,217 - [INFO] - handlers.donate - (donate.py)._init_bonus_table(128) - ✅ Таблица user_bonuses создана/проверена
+2025-11-16 05:21:13,219 - [INFO] - root - (donate.py).register_donate_handlers(955) - ✅ Донат обработчики зарегистрированы (с бонусами за привилегии)
+2025-11-16 05:21:13,219 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ donate обработчики зарегистрированы
+2025-11-16 05:21:13,222 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_main_menu
+2025-11-16 05:21:13,223 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_admin_users_list
+2025-11-16 05:21:13,223 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ callback обработчики зарегистрированы
+2025-11-16 05:21:13,226 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ reference обработчики зарегистрированы
+2025-11-16 05:21:13,232 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ transfer обработчики зарегистрированы
+2025-11-16 05:21:13,234 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ history_service обработчики зарегистрированы
+2025-11-16 05:21:13,237 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ record обработчики зарегистрированы
+2025-11-16 05:21:13,238 - [INFO] - venv - (gifts.py).register_gift_handlers(983) - ✅ Обработчики подарков зарегистрированы с группировкой подарков
+2025-11-16 05:21:13,238 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ gifts обработчики зарегистрированы
+2025-11-16 05:21:13,241 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ marriage_handler обработчики зарегистрированы
+2025-11-16 05:21:13,243 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ roulette обработчики зарегистрированы
+2025-11-16 05:21:13,247 - [INFO] - handlers.police_handler - (police_handler.py).register_police_handlers(663) - ✅ Обработчики 'полиция' зарегистрированы
+2025-11-16 05:21:13,247 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ police_handler обработчики зарегистрированы
+2025-11-16 05:21:13,250 - [INFO] - handlers.thief_handler - (thief_handler.py).register_thief_handlers(479) - ✅ Обработчики 'кража' зарегистрированы (без ареста)
+2025-11-16 05:21:13,250 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ thief_handler обработчики зарегистрированы
+2025-11-16 05:21:13,254 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(863) - ✅ Обработчики 'бот ищи' зарегистрированы (ТОЧНЫЕ команды)
+2025-11-16 05:21:13,254 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(864) - 📝 Сбор данных включен для 19 команд
+2025-11-16 05:21:13,254 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(865) - 🛡️ ID товаров защиты: [4]
+2025-11-16 05:21:13,254 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_search_handler обработчики зарегистрированы
+2025-11-16 05:21:13,256 - [INFO] - handlers.chat_handlers - (chat_handlers.py).register_chat_handlers(126) - ✅ Chat handlers registered
+2025-11-16 05:21:13,256 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ chat_handlers обработчики зарегистрированы
+2025-11-16 05:21:13,259 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).register_bot_stop_handlers(482) - ✅ Обработчики 'бот стоп' зарегистрированы (с исправленной логикой и защитой)
+2025-11-16 05:21:13,259 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_stop_handler обработчики зарегистрированы
+2025-11-16 05:21:13,259 - [INFO] - __main__ - (main.py).register_all_handlers(182) - ✅ Все обработчики зарегистрированы. Всего: 18
+2025-11-16 05:21:13,259 - [INFO] - venv - (gifts.py).ensure_gifts_on_startup(949) - 🎁 Проверка подарков в базе данных...
+2025-11-16 05:21:13,268 - [INFO] - venv - (gifts.py).ensure_gifts_exist(246) - ✅ Все подарки уже существуют в базе
+2025-11-16 05:21:13,269 - [INFO] - __main__ - (main.py).setup_bot_ban_middleware(195) - ✅ BotBanMiddleware зарегистрирован
+2025-11-16 05:21:13,269 - [INFO] - __main__ - (main.py).on_startup(251) - ⏰ Запуск задач очистки...
+2025-11-16 05:21:13,270 - [INFO] - __main__ - (main.py).start_cleanup_tasks(209) - ✅ Планировщик очистки БД запущен
+2025-11-16 05:21:13,270 - [INFO] - __main__ - (main.py).start_cleanup_tasks(214) - ✅ Задачи проверки мутов/банов запущены
+2025-11-16 05:21:13,270 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1162) - Restoring active mutes after restart...
+2025-11-16 05:21:13,270 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(214) - Restoring bot bans after restart...
+2025-11-16 05:21:13,270 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(230) - Restored 0 active bot bans
+2025-11-16 05:21:13,274 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1213) - Active mutes restoration completed
+2025-11-16 05:21:13,274 - [INFO] - __main__ - (main.py).start_cleanup_tasks(218) - ✅ Активные муты восстановлены после перезапуска
+2025-11-16 05:21:13,274 - [INFO] - __main__ - (main.py).on_startup(254) - ✅ Бот успешно запущен
+2025-11-16 05:21:13,274 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(38) - 🔄 Планировщик очистки запущен
+2025-11-16 05:21:13,275 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(54) - ⏰ Следующая очистка через 67127 секунд (18.6 часов)
+2025-11-16 05:21:13,275 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-16 05:21:34,357 - [INFO] - handlers.police_handler - (police_handler.py).arrest_user(245) - 🚨 Начало ареста от пользователя 6090751674
+2025-11-16 05:21:34,367 - [INFO] - handlers.police_handler - (police_handler.py)._ensure_table_exists(29) - ✅ Все таблицы проверены/созданы
+2025-11-16 05:21:34,367 - [INFO] - handlers.police_handler - (police_handler.py)._check_police_permission(38) - 🔍 Проверка прав полицейского для пользователя 6090751674
+2025-11-16 05:21:34,369 - [INFO] - handlers.police_handler - (police_handler.py)._check_police_permission(43) - 📦 Привилегии пользователя 6090751674: [1, 2]
+2025-11-16 05:21:34,369 - [INFO] - handlers.police_handler - (police_handler.py)._check_police_permission(47) - ✅ User 6090751674 имеет привилегию полицейского
+2025-11-16 05:21:34,369 - [INFO] - handlers.police_handler - (police_handler.py)._check_privilege_expiry(104) - 📅 Проверка срока привилегии 2 для пользователя 6090751674: (None,)
+2025-11-16 05:21:34,369 - [INFO] - handlers.police_handler - (police_handler.py)._check_privilege_expiry(113) - ∞ Привилегия 2 для пользователя 6090751674 бессрочная
+2025-11-16 05:21:34,369 - [INFO] - handlers.police_handler - (police_handler.py)._check_police_permission(50) - 📅 Привилегия полицейского действительна: True
+2025-11-16 05:21:34,370 - [INFO] - handlers.police_handler - (police_handler.py).arrest_user(268) - 👮 Полицейский 6090751674 пытается арестовать 1054684037
+2025-11-16 05:21:34,481 - [INFO] - handlers.police_handler - (police_handler.py)._check_user_exists(201) - 👤 Проверка существования пользователя 1054684037: True
+2025-11-16 05:21:34,482 - [INFO] - handlers.police_handler - (police_handler.py)._check_police_cooldown(213) - ⏳ Проверка кулдауна для полицейского 6090751674
+2025-11-16 05:21:34,489 - [INFO] - handlers.police_handler - (police_handler.py)._check_police_cooldown(225) - 📅 Последний арест: 2025-11-15 09:30:00.539738, конец кулдауна: 2025-11-15 12:30:00.539738, сейчас: 2025-11-16 05:21:34.489452
+2025-11-16 05:21:34,489 - [INFO] - handlers.police_handler - (police_handler.py)._check_police_cooldown(229) - ✅ Кулдаун полицейского 6090751674 пройден
+2025-11-16 05:21:34,489 - [INFO] - handlers.police_handler - (police_handler.py)._check_thief_permission(66) - 🔍 Проверка прав вора для пользователя 1054684037
+2025-11-16 05:21:34,491 - [INFO] - handlers.police_handler - (police_handler.py)._check_thief_permission(71) - 📦 Привилегии пользователя 1054684037: [1]
+2025-11-16 05:21:34,491 - [INFO] - handlers.police_handler - (police_handler.py)._check_thief_permission(75) - ✅ User 1054684037 имеет привилегию вора
+2025-11-16 05:21:34,492 - [INFO] - handlers.police_handler - (police_handler.py)._check_privilege_expiry(104) - 📅 Проверка срока привилегии 1 для пользователя 1054684037: (None,)
+2025-11-16 05:21:34,492 - [INFO] - handlers.police_handler - (police_handler.py)._check_privilege_expiry(113) - ∞ Привилегия 1 для пользователя 1054684037 бессрочная
+2025-11-16 05:21:34,492 - [INFO] - handlers.police_handler - (police_handler.py)._check_thief_permission(78) - 📅 Привилегия вора действительна: True
+2025-11-16 05:21:34,493 - [INFO] - handlers.police_handler - (police_handler.py).arrest_user(333) - 💾 Сохранение ареста в базу данных: вор 1054684037, полицейский 6090751674, время 180 минут
+2025-11-16 05:21:34,498 - [INFO] - handlers.police_handler - (police_handler.py).arrest_user(337) - ✅ Арест успешно сохранен в базу данных
+2025-11-16 05:21:34,700 - [INFO] - handlers.police_handler - (police_handler.py).arrest_user(352) - ✅ Полицейский 6090751674 арестовал вора 1054684037 на 180 минут
+2025-11-16 05:21:50,622 - [INFO] - handlers.police_handler - (police_handler.py)._ensure_table_exists(29) - ✅ Все таблицы проверены/созданы
+2025-11-16 05:21:50,625 - [INFO] - handlers.police_handler - (police_handler.py)._check_thief_permission(66) - 🔍 Проверка прав вора для пользователя 1054684037
+2025-11-16 05:21:50,629 - [INFO] - handlers.police_handler - (police_handler.py)._check_thief_permission(71) - 📦 Привилегии пользователя 1054684037: [1]
+2025-11-16 05:21:50,629 - [INFO] - handlers.police_handler - (police_handler.py)._check_thief_permission(75) - ✅ User 1054684037 имеет привилегию вора
+2025-11-16 05:21:50,631 - [INFO] - handlers.police_handler - (police_handler.py)._check_privilege_expiry(104) - 📅 Проверка срока привилегии 1 для пользователя 1054684037: (None,)
+2025-11-16 05:21:50,631 - [INFO] - handlers.police_handler - (police_handler.py)._check_privilege_expiry(113) - ∞ Привилегия 1 для пользователя 1054684037 бессрочная
+2025-11-16 05:21:50,631 - [INFO] - handlers.police_handler - (police_handler.py)._check_thief_permission(78) - 📅 Привилегия вора действительна: True
+2025-11-16 05:22:06,601 - [INFO] - __main__ - (main.py).signal_handler(308) - 📞 Получен сигнал 2. Завершение работы...
+2025-11-16 05:22:06,602 - [INFO] - __main__ - (main.py).on_shutdown(259) - 🛑 Завершение работы бота...
+2025-11-16 05:22:06,602 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(147) - 🛑 Остановка планировщика очистки...
+2025-11-16 05:22:06,602 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(156) - ✅ Планировщик очистки остановлен
+2025-11-16 05:22:06,602 - [INFO] - __main__ - (main.py).on_shutdown(267) - ✅ Планировщик очистки остановлен
+2025-11-16 05:22:06,602 - [INFO] - __main__ - (main.py).on_shutdown(276) - ✅ Задачи мутов/банов остановлены
+2025-11-16 05:22:06,603 - [INFO] - __main__ - (main.py).on_shutdown(284) - ✅ Соединения с БД закрыты
+2025-11-16 05:22:06,603 - [INFO] - __main__ - (main.py).on_shutdown(292) - ✅ Хранилище диспетчера закрыто
+2025-11-16 05:22:06,603 - [INFO] - __main__ - (main.py).on_shutdown(299) - ✅ Бот остановлен
+2025-11-16 05:22:06,603 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).stop_polling(433) - Stop polling...
+2025-11-16 05:22:06,604 - [WARNING] - aiogram - (executor.py).start_polling(329) - Goodbye!
+2025-11-16 05:23:38,666 - [INFO] - __main__ - (main.py).main(316) - 🔄 Запуск бота
+2025-11-16 05:23:39,030 - [INFO] - aiogram - (executor.py)._welcome(362) - Bot: тестайс [@testaicebot]
+2025-11-16 05:23:39,246 - [WARNING] - aiogram - (executor.py)._skip_updates(358) - Updates were skipped successfully.
+2025-11-16 05:23:39,246 - [INFO] - __main__ - (main.py).on_startup(227) - 🚀 Запуск бота...
+2025-11-16 05:23:39,246 - [INFO] - __main__ - (main.py).on_startup(230) - 📊 Настройка базы данных...
+2025-11-16 05:23:39,338 - [INFO] - __main__ - (main.py).setup_database(87) - ✅ Все таблицы базы данных созданы
+2025-11-16 05:23:39,339 - [INFO] - __main__ - (main.py).setup_database(94) - ✅ Подключение к базе данных установлено
+2025-11-16 05:23:39,339 - [INFO] - __main__ - (main.py).on_startup(234) - 🧹 Очистка старых данных...
+2025-11-16 05:23:39,371 - [INFO] - __main__ - (main.py).cleanup_old_limits(119) - ✅ Старые записи лимитов не найдены
+2025-11-16 05:23:39,371 - [INFO] - __main__ - (main.py).setup_middleware_first(135) - 🛠️ Настройка middleware...
+2025-11-16 05:23:39,372 - [INFO] - __main__ - (main.py).setup_middleware_first(139) - ✅ AutoRegisterMiddleware зарегистрирован
+2025-11-16 05:23:39,372 - [INFO] - __main__ - (main.py).setup_middleware_first(147) - ✅ ThrottlingMiddleware зарегистрирован для 16 команд
+2025-11-16 05:23:39,372 - [INFO] - __main__ - (main.py).on_startup(242) - 📝 Регистрация обработчиков...
+2025-11-16 05:23:39,372 - [INFO] - __main__ - (main.py).register_all_handlers(158) - 🔄 Регистрация обработчиков...
+2025-11-16 05:23:39,391 - [INFO] - root - (start.py).register_start_handler(778) - ✅ Стартовые обработчики зарегистрированы
+2025-11-16 05:23:39,391 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ start обработчики зарегистрированы
+2025-11-16 05:23:39,401 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ admin обработчики зарегистрированы
+2025-11-16 05:23:39,405 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ mute_ban обработчики зарегистрированы
+2025-11-16 05:23:39,405 - [INFO] - root - (shop.py).register_shop_handlers(483) - ✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)
+2025-11-16 05:23:39,406 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ shop обработчики зарегистрированы
+2025-11-16 05:23:39,407 - [INFO] - handlers.donate - (donate.py)._init_bonus_table(128) - ✅ Таблица user_bonuses создана/проверена
+2025-11-16 05:23:39,408 - [INFO] - root - (donate.py).register_donate_handlers(955) - ✅ Донат обработчики зарегистрированы (с бонусами за привилегии)
+2025-11-16 05:23:39,408 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ donate обработчики зарегистрированы
+2025-11-16 05:23:39,409 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_main_menu
+2025-11-16 05:23:39,409 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_admin_users_list
+2025-11-16 05:23:39,409 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ callback обработчики зарегистрированы
+2025-11-16 05:23:39,410 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ reference обработчики зарегистрированы
+2025-11-16 05:23:39,412 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ transfer обработчики зарегистрированы
+2025-11-16 05:23:39,414 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ history_service обработчики зарегистрированы
+2025-11-16 05:23:39,415 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ record обработчики зарегистрированы
+2025-11-16 05:23:39,416 - [INFO] - venv - (gifts.py).register_gift_handlers(983) - ✅ Обработчики подарков зарегистрированы с группировкой подарков
+2025-11-16 05:23:39,416 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ gifts обработчики зарегистрированы
+2025-11-16 05:23:39,418 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ marriage_handler обработчики зарегистрированы
+2025-11-16 05:23:39,420 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ roulette обработчики зарегистрированы
+2025-11-16 05:23:39,420 - [ERROR] - __main__ - (main.py).register_all_handlers(178) - ❌ Ошибка регистрации police_handler: No module named 'handlers.police_handler'
+2025-11-16 05:23:39,420 - [ERROR] - __main__ - (main.py).register_all_handlers(178) - ❌ Ошибка регистрации thief_handler: No module named 'handlers.thief_handler'
+2025-11-16 05:23:39,422 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(863) - ✅ Обработчики 'бот ищи' зарегистрированы (ТОЧНЫЕ команды)
+2025-11-16 05:23:39,422 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(864) - 📝 Сбор данных включен для 19 команд
+2025-11-16 05:23:39,422 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(865) - 🛡️ ID товаров защиты: [4]
+2025-11-16 05:23:39,422 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_search_handler обработчики зарегистрированы
+2025-11-16 05:23:39,424 - [INFO] - handlers.chat_handlers - (chat_handlers.py).register_chat_handlers(126) - ✅ Chat handlers registered
+2025-11-16 05:23:39,424 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ chat_handlers обработчики зарегистрированы
+2025-11-16 05:23:39,427 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).register_bot_stop_handlers(482) - ✅ Обработчики 'бот стоп' зарегистрированы (с исправленной логикой и защитой)
+2025-11-16 05:23:39,428 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_stop_handler обработчики зарегистрированы
+2025-11-16 05:23:39,428 - [INFO] - __main__ - (main.py).register_all_handlers(182) - ✅ Все обработчики зарегистрированы. Всего: 16
+2025-11-16 05:23:39,429 - [INFO] - venv - (gifts.py).ensure_gifts_on_startup(949) - 🎁 Проверка подарков в базе данных...
+2025-11-16 05:23:39,439 - [INFO] - venv - (gifts.py).ensure_gifts_exist(246) - ✅ Все подарки уже существуют в базе
+2025-11-16 05:23:39,439 - [INFO] - __main__ - (main.py).setup_bot_ban_middleware(195) - ✅ BotBanMiddleware зарегистрирован
+2025-11-16 05:23:39,440 - [INFO] - __main__ - (main.py).on_startup(251) - ⏰ Запуск задач очистки...
+2025-11-16 05:23:39,440 - [INFO] - __main__ - (main.py).start_cleanup_tasks(209) - ✅ Планировщик очистки БД запущен
+2025-11-16 05:23:39,440 - [INFO] - __main__ - (main.py).start_cleanup_tasks(214) - ✅ Задачи проверки мутов/банов запущены
+2025-11-16 05:23:39,441 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1162) - Restoring active mutes after restart...
+2025-11-16 05:23:39,441 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(214) - Restoring bot bans after restart...
+2025-11-16 05:23:39,441 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(230) - Restored 0 active bot bans
+2025-11-16 05:23:39,444 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1213) - Active mutes restoration completed
+2025-11-16 05:23:39,444 - [INFO] - __main__ - (main.py).start_cleanup_tasks(218) - ✅ Активные муты восстановлены после перезапуска
+2025-11-16 05:23:39,444 - [INFO] - __main__ - (main.py).on_startup(254) - ✅ Бот успешно запущен
+2025-11-16 05:23:39,445 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(38) - 🔄 Планировщик очистки запущен
+2025-11-16 05:23:39,445 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(54) - ⏰ Следующая очистка через 66981 секунд (18.6 часов)
+2025-11-16 05:23:39,445 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-16 05:23:59,768 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'арест'
+2025-11-16 05:24:35,803 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'украсть'
+2025-11-16 05:24:42,131 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'красть'
+2025-11-16 05:24:49,346 - [INFO] - __main__ - (main.py).signal_handler(308) - 📞 Получен сигнал 2. Завершение работы...
+2025-11-16 05:24:49,347 - [INFO] - __main__ - (main.py).on_shutdown(259) - 🛑 Завершение работы бота...
+2025-11-16 05:24:49,347 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(147) - 🛑 Остановка планировщика очистки...
+2025-11-16 05:24:49,347 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(156) - ✅ Планировщик очистки остановлен
+2025-11-16 05:24:49,347 - [INFO] - __main__ - (main.py).on_shutdown(267) - ✅ Планировщик очистки остановлен
+2025-11-16 05:24:49,347 - [INFO] - __main__ - (main.py).on_shutdown(276) - ✅ Задачи мутов/банов остановлены
+2025-11-16 05:24:49,348 - [INFO] - __main__ - (main.py).on_shutdown(284) - ✅ Соединения с БД закрыты
+2025-11-16 05:24:49,348 - [INFO] - __main__ - (main.py).on_shutdown(292) - ✅ Хранилище диспетчера закрыто
+2025-11-16 05:24:49,348 - [INFO] - __main__ - (main.py).on_shutdown(299) - ✅ Бот остановлен
+2025-11-16 05:24:49,348 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).stop_polling(433) - Stop polling...
+2025-11-16 05:24:49,348 - [WARNING] - aiogram - (executor.py).start_polling(329) - Goodbye!
+2025-11-16 05:37:19,690 - [INFO] - __main__ - (main.py).main(316) - 🔄 Запуск бота
+2025-11-16 05:37:20,081 - [INFO] - aiogram - (executor.py)._welcome(362) - Bot: тестайс [@testaicebot]
+2025-11-16 05:37:20,307 - [WARNING] - aiogram - (executor.py)._skip_updates(358) - Updates were skipped successfully.
+2025-11-16 05:37:20,307 - [INFO] - __main__ - (main.py).on_startup(227) - 🚀 Запуск бота...
+2025-11-16 05:37:20,307 - [INFO] - __main__ - (main.py).on_startup(230) - 📊 Настройка базы данных...
+2025-11-16 05:37:20,605 - [INFO] - __main__ - (main.py).setup_database(87) - ✅ Все таблицы базы данных созданы
+2025-11-16 05:37:20,606 - [INFO] - __main__ - (main.py).setup_database(94) - ✅ Подключение к базе данных установлено
+2025-11-16 05:37:20,606 - [INFO] - __main__ - (main.py).on_startup(234) - 🧹 Очистка старых данных...
+2025-11-16 05:37:20,643 - [INFO] - __main__ - (main.py).cleanup_old_limits(119) - ✅ Старые записи лимитов не найдены
+2025-11-16 05:37:20,645 - [INFO] - __main__ - (main.py).setup_middleware_first(135) - 🛠️ Настройка middleware...
+2025-11-16 05:37:20,645 - [INFO] - __main__ - (main.py).setup_middleware_first(139) - ✅ AutoRegisterMiddleware зарегистрирован
+2025-11-16 05:37:20,645 - [INFO] - __main__ - (main.py).setup_middleware_first(147) - ✅ ThrottlingMiddleware зарегистрирован для 16 команд
+2025-11-16 05:37:20,645 - [INFO] - __main__ - (main.py).on_startup(242) - 📝 Регистрация обработчиков...
+2025-11-16 05:37:20,645 - [INFO] - __main__ - (main.py).register_all_handlers(158) - 🔄 Регистрация обработчиков...
+2025-11-16 05:37:20,682 - [INFO] - root - (start.py).register_start_handler(778) - ✅ Стартовые обработчики зарегистрированы
+2025-11-16 05:37:20,682 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ start обработчики зарегистрированы
+2025-11-16 05:37:20,698 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ admin обработчики зарегистрированы
+2025-11-16 05:37:20,702 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ mute_ban обработчики зарегистрированы
+2025-11-16 05:37:20,702 - [INFO] - root - (shop.py).register_shop_handlers(483) - ✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)
+2025-11-16 05:37:20,703 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ shop обработчики зарегистрированы
+2025-11-16 05:37:20,708 - [INFO] - handlers.donate - (donate.py)._init_bonus_table(128) - ✅ Таблица user_bonuses создана/проверена
+2025-11-16 05:37:20,709 - [INFO] - root - (donate.py).register_donate_handlers(955) - ✅ Донат обработчики зарегистрированы (с бонусами за привилегии)
+2025-11-16 05:37:20,709 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ donate обработчики зарегистрированы
+2025-11-16 05:37:20,711 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_main_menu
+2025-11-16 05:37:20,711 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_admin_users_list
+2025-11-16 05:37:20,711 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ callback обработчики зарегистрированы
+2025-11-16 05:37:20,713 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ reference обработчики зарегистрированы
+2025-11-16 05:37:20,717 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ transfer обработчики зарегистрированы
+2025-11-16 05:37:20,719 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ history_service обработчики зарегистрированы
+2025-11-16 05:37:20,722 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ record обработчики зарегистрированы
+2025-11-16 05:37:20,723 - [INFO] - venv - (gifts.py).register_gift_handlers(983) - ✅ Обработчики подарков зарегистрированы с группировкой подарков
+2025-11-16 05:37:20,724 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ gifts обработчики зарегистрированы
+2025-11-16 05:37:20,727 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ marriage_handler обработчики зарегистрированы
+2025-11-16 05:37:20,729 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ roulette обработчики зарегистрированы
+2025-11-16 05:37:20,729 - [ERROR] - __main__ - (main.py).register_all_handlers(178) - ❌ Ошибка регистрации police_handler: No module named 'handlers.police_handler'
+2025-11-16 05:37:20,729 - [ERROR] - __main__ - (main.py).register_all_handlers(178) - ❌ Ошибка регистрации thief_handler: No module named 'handlers.thief_handler'
+2025-11-16 05:37:20,733 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(863) - ✅ Обработчики 'бот ищи' зарегистрированы (ТОЧНЫЕ команды)
+2025-11-16 05:37:20,733 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(864) - 📝 Сбор данных включен для 19 команд
+2025-11-16 05:37:20,733 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(865) - 🛡️ ID товаров защиты: [4]
+2025-11-16 05:37:20,733 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_search_handler обработчики зарегистрированы
+2025-11-16 05:37:20,735 - [INFO] - handlers.chat_handlers - (chat_handlers.py).register_chat_handlers(126) - ✅ Chat handlers registered
+2025-11-16 05:37:20,735 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ chat_handlers обработчики зарегистрированы
+2025-11-16 05:37:20,739 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).register_bot_stop_handlers(482) - ✅ Обработчики 'бот стоп' зарегистрированы (с исправленной логикой и защитой)
+2025-11-16 05:37:20,739 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_stop_handler обработчики зарегистрированы
+2025-11-16 05:37:20,739 - [INFO] - __main__ - (main.py).register_all_handlers(182) - ✅ Все обработчики зарегистрированы. Всего: 16
+2025-11-16 05:37:20,739 - [INFO] - venv - (gifts.py).ensure_gifts_on_startup(949) - 🎁 Проверка подарков в базе данных...
+2025-11-16 05:37:20,743 - [INFO] - venv - (gifts.py).ensure_gifts_exist(246) - ✅ Все подарки уже существуют в базе
+2025-11-16 05:37:20,744 - [INFO] - __main__ - (main.py).setup_bot_ban_middleware(195) - ✅ BotBanMiddleware зарегистрирован
+2025-11-16 05:37:20,745 - [INFO] - __main__ - (main.py).on_startup(251) - ⏰ Запуск задач очистки...
+2025-11-16 05:37:20,746 - [INFO] - __main__ - (main.py).start_cleanup_tasks(209) - ✅ Планировщик очистки БД запущен
+2025-11-16 05:37:20,746 - [INFO] - __main__ - (main.py).start_cleanup_tasks(214) - ✅ Задачи проверки мутов/банов запущены
+2025-11-16 05:37:20,746 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1162) - Restoring active mutes after restart...
+2025-11-16 05:37:20,746 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(214) - Restoring bot bans after restart...
+2025-11-16 05:37:20,746 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(230) - Restored 0 active bot bans
+2025-11-16 05:37:20,748 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1213) - Active mutes restoration completed
+2025-11-16 05:37:20,748 - [INFO] - __main__ - (main.py).start_cleanup_tasks(218) - ✅ Активные муты восстановлены после перезапуска
+2025-11-16 05:37:20,748 - [INFO] - __main__ - (main.py).on_startup(254) - ✅ Бот успешно запущен
+2025-11-16 05:37:20,748 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(38) - 🔄 Планировщик очистки запущен
+2025-11-16 05:37:20,748 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(54) - ⏰ Следующая очистка через 66159 секунд (18.4 часов)
+2025-11-16 05:37:20,749 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-16 05:37:28,588 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'красть'
+2025-11-16 05:37:37,036 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'арест'
+2025-11-16 06:06:42,500 - [INFO] - __main__ - (main.py).signal_handler(308) - 📞 Получен сигнал 2. Завершение работы...
+2025-11-16 06:06:42,500 - [INFO] - __main__ - (main.py).on_shutdown(259) - 🛑 Завершение работы бота...
+2025-11-16 06:06:42,500 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(147) - 🛑 Остановка планировщика очистки...
+2025-11-16 06:06:42,501 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(156) - ✅ Планировщик очистки остановлен
+2025-11-16 06:06:42,501 - [INFO] - __main__ - (main.py).on_shutdown(267) - ✅ Планировщик очистки остановлен
+2025-11-16 06:06:42,501 - [INFO] - __main__ - (main.py).on_shutdown(276) - ✅ Задачи мутов/банов остановлены
+2025-11-16 06:06:42,502 - [INFO] - __main__ - (main.py).on_shutdown(284) - ✅ Соединения с БД закрыты
+2025-11-16 06:06:42,502 - [INFO] - __main__ - (main.py).on_shutdown(292) - ✅ Хранилище диспетчера закрыто
+2025-11-16 06:06:42,502 - [INFO] - __main__ - (main.py).on_shutdown(299) - ✅ Бот остановлен
+2025-11-16 06:06:42,502 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).stop_polling(433) - Stop polling...
+2025-11-16 06:06:42,503 - [WARNING] - aiogram - (executor.py).start_polling(329) - Goodbye!
+2025-11-16 06:07:47,304 - [INFO] - __main__ - (main.py).main(316) - 🔄 Запуск бота
+2025-11-16 06:07:47,696 - [INFO] - aiogram - (executor.py)._welcome(362) - Bot: тестайс [@testaicebot]
+2025-11-16 06:07:47,930 - [WARNING] - aiogram - (executor.py)._skip_updates(358) - Updates were skipped successfully.
+2025-11-16 06:07:47,931 - [INFO] - __main__ - (main.py).on_startup(227) - 🚀 Запуск бота...
+2025-11-16 06:07:47,931 - [INFO] - __main__ - (main.py).on_startup(230) - 📊 Настройка базы данных...
+2025-11-16 06:07:48,012 - [INFO] - __main__ - (main.py).setup_database(87) - ✅ Все таблицы базы данных созданы
+2025-11-16 06:07:48,013 - [INFO] - __main__ - (main.py).setup_database(94) - ✅ Подключение к базе данных установлено
+2025-11-16 06:07:48,013 - [INFO] - __main__ - (main.py).on_startup(234) - 🧹 Очистка старых данных...
+2025-11-16 06:07:48,039 - [INFO] - __main__ - (main.py).cleanup_old_limits(119) - ✅ Старые записи лимитов не найдены
+2025-11-16 06:07:48,040 - [INFO] - __main__ - (main.py).setup_middleware_first(135) - 🛠️ Настройка middleware...
+2025-11-16 06:07:48,040 - [INFO] - __main__ - (main.py).setup_middleware_first(139) - ✅ AutoRegisterMiddleware зарегистрирован
+2025-11-16 06:07:48,040 - [INFO] - __main__ - (main.py).setup_middleware_first(147) - ✅ ThrottlingMiddleware зарегистрирован для 16 команд
+2025-11-16 06:07:48,040 - [INFO] - __main__ - (main.py).on_startup(242) - 📝 Регистрация обработчиков...
+2025-11-16 06:07:48,041 - [INFO] - __main__ - (main.py).register_all_handlers(158) - 🔄 Регистрация обработчиков...
+2025-11-16 06:07:48,077 - [INFO] - root - (start.py).register_start_handler(778) - ✅ Стартовые обработчики зарегистрированы
+2025-11-16 06:07:48,077 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ start обработчики зарегистрированы
+2025-11-16 06:07:48,090 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ admin обработчики зарегистрированы
+2025-11-16 06:07:48,094 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ mute_ban обработчики зарегистрированы
+2025-11-16 06:07:48,094 - [INFO] - root - (shop.py).register_shop_handlers(483) - ✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)
+2025-11-16 06:07:48,095 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ shop обработчики зарегистрированы
+2025-11-16 06:07:48,096 - [INFO] - handlers.donate - (donate.py)._init_bonus_table(128) - ✅ Таблица user_bonuses создана/проверена
+2025-11-16 06:07:48,097 - [INFO] - root - (donate.py).register_donate_handlers(955) - ✅ Донат обработчики зарегистрированы (с бонусами за привилегии)
+2025-11-16 06:07:48,097 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ donate обработчики зарегистрированы
+2025-11-16 06:07:48,099 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_main_menu
+2025-11-16 06:07:48,100 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_admin_users_list
+2025-11-16 06:07:48,100 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ callback обработчики зарегистрированы
+2025-11-16 06:07:48,102 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ reference обработчики зарегистрированы
+2025-11-16 06:07:48,107 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ transfer обработчики зарегистрированы
+2025-11-16 06:07:48,109 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ history_service обработчики зарегистрированы
+2025-11-16 06:07:48,115 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ record обработчики зарегистрированы
+2025-11-16 06:07:48,116 - [INFO] - venv - (gifts.py).register_gift_handlers(983) - ✅ Обработчики подарков зарегистрированы с группировкой подарков
+2025-11-16 06:07:48,116 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ gifts обработчики зарегистрированы
+2025-11-16 06:07:48,123 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ marriage_handler обработчики зарегистрированы
+2025-11-16 06:07:48,125 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ roulette обработчики зарегистрированы
+2025-11-16 06:07:48,138 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ police обработчики зарегистрированы
+2025-11-16 06:07:48,143 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ thief обработчики зарегистрированы
+2025-11-16 06:07:48,147 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(863) - ✅ Обработчики 'бот ищи' зарегистрированы (ТОЧНЫЕ команды)
+2025-11-16 06:07:48,147 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(864) - 📝 Сбор данных включен для 19 команд
+2025-11-16 06:07:48,147 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(865) - 🛡️ ID товаров защиты: [4]
+2025-11-16 06:07:48,147 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_search_handler обработчики зарегистрированы
+2025-11-16 06:07:48,150 - [INFO] - handlers.chat_handlers - (chat_handlers.py).register_chat_handlers(126) - ✅ Chat handlers registered
+2025-11-16 06:07:48,150 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ chat_handlers обработчики зарегистрированы
+2025-11-16 06:07:48,155 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).register_bot_stop_handlers(482) - ✅ Обработчики 'бот стоп' зарегистрированы (с исправленной логикой и защитой)
+2025-11-16 06:07:48,155 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_stop_handler обработчики зарегистрированы
+2025-11-16 06:07:48,155 - [INFO] - __main__ - (main.py).register_all_handlers(182) - ✅ Все обработчики зарегистрированы. Всего: 18
+2025-11-16 06:07:48,155 - [INFO] - venv - (gifts.py).ensure_gifts_on_startup(949) - 🎁 Проверка подарков в базе данных...
+2025-11-16 06:07:48,159 - [INFO] - venv - (gifts.py).ensure_gifts_exist(246) - ✅ Все подарки уже существуют в базе
+2025-11-16 06:07:48,160 - [INFO] - __main__ - (main.py).setup_bot_ban_middleware(195) - ✅ BotBanMiddleware зарегистрирован
+2025-11-16 06:07:48,160 - [INFO] - __main__ - (main.py).on_startup(251) - ⏰ Запуск задач очистки...
+2025-11-16 06:07:48,161 - [INFO] - __main__ - (main.py).start_cleanup_tasks(209) - ✅ Планировщик очистки БД запущен
+2025-11-16 06:07:48,161 - [INFO] - __main__ - (main.py).start_cleanup_tasks(214) - ✅ Задачи проверки мутов/банов запущены
+2025-11-16 06:07:48,161 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1162) - Restoring active mutes after restart...
+2025-11-16 06:07:48,161 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(214) - Restoring bot bans after restart...
+2025-11-16 06:07:48,161 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(230) - Restored 0 active bot bans
+2025-11-16 06:07:48,165 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1213) - Active mutes restoration completed
+2025-11-16 06:07:48,165 - [INFO] - __main__ - (main.py).start_cleanup_tasks(218) - ✅ Активные муты восстановлены после перезапуска
+2025-11-16 06:07:48,165 - [INFO] - __main__ - (main.py).on_startup(254) - ✅ Бот успешно запущен
+2025-11-16 06:07:48,165 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(38) - 🔄 Планировщик очистки запущен
+2025-11-16 06:07:48,165 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(54) - ⏰ Следующая очистка через 64332 секунд (17.9 часов)
+2025-11-16 06:07:48,165 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-16 06:08:20,970 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'красть'
+2025-11-16 06:10:31,987 - [ERROR] - handlers.roulette_logs - (roulette_logs.py).add_game_log(40) - Ошибка добавления лога рулетки: (psycopg2.errors.NumericValueOutOfRange) integer out of range
+
+[SQL: INSERT INTO roulette_game_logs (chat_id, result, color_emoji) VALUES (%(chat_id)s, %(result)s, %(color_emoji)s) RETURNING roulette_game_logs.id, roulette_game_logs.created_at]
+[parameters: {'chat_id': -1003110392320, 'result': 6, 'color_emoji': '⚫'}]
+(Background on this error at: https://sqlalche.me/e/20/9h9h)
+2025-11-16 06:10:32,889 - [INFO] - main - (roulette.py).update_users_batch(149) - ✅ Пакетное обновление: 1 пользователей
+2025-11-16 06:12:37,397 - [INFO] - __main__ - (main.py).signal_handler(308) - 📞 Получен сигнал 2. Завершение работы...
+2025-11-16 06:12:37,398 - [INFO] - __main__ - (main.py).on_shutdown(259) - 🛑 Завершение работы бота...
+2025-11-16 06:12:37,398 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(147) - 🛑 Остановка планировщика очистки...
+2025-11-16 06:12:37,398 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(156) - ✅ Планировщик очистки остановлен
+2025-11-16 06:12:37,398 - [INFO] - __main__ - (main.py).on_shutdown(267) - ✅ Планировщик очистки остановлен
+2025-11-16 06:12:37,399 - [INFO] - __main__ - (main.py).on_shutdown(276) - ✅ Задачи мутов/банов остановлены
+2025-11-16 06:12:37,399 - [INFO] - __main__ - (main.py).on_shutdown(284) - ✅ Соединения с БД закрыты
+2025-11-16 06:12:37,399 - [INFO] - __main__ - (main.py).on_shutdown(292) - ✅ Хранилище диспетчера закрыто
+2025-11-16 06:12:37,400 - [INFO] - __main__ - (main.py).on_shutdown(299) - ✅ Бот остановлен
+2025-11-16 06:12:37,400 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).stop_polling(433) - Stop polling...
+2025-11-16 06:12:37,400 - [WARNING] - aiogram - (executor.py).start_polling(329) - Goodbye!
+2025-11-16 06:14:00,917 - [INFO] - __main__ - (main.py).main(316) - 🔄 Запуск бота
+2025-11-16 06:14:01,312 - [INFO] - aiogram - (executor.py)._welcome(362) - Bot: тестайс [@testaicebot]
+2025-11-16 06:14:01,551 - [WARNING] - aiogram - (executor.py)._skip_updates(358) - Updates were skipped successfully.
+2025-11-16 06:14:01,552 - [INFO] - __main__ - (main.py).on_startup(227) - 🚀 Запуск бота...
+2025-11-16 06:14:01,552 - [INFO] - __main__ - (main.py).on_startup(230) - 📊 Настройка базы данных...
+2025-11-16 06:14:01,637 - [INFO] - __main__ - (main.py).setup_database(87) - ✅ Все таблицы базы данных созданы
+2025-11-16 06:14:01,638 - [INFO] - __main__ - (main.py).setup_database(94) - ✅ Подключение к базе данных установлено
+2025-11-16 06:14:01,638 - [INFO] - __main__ - (main.py).on_startup(234) - 🧹 Очистка старых данных...
+2025-11-16 06:14:01,664 - [INFO] - __main__ - (main.py).cleanup_old_limits(119) - ✅ Старые записи лимитов не найдены
+2025-11-16 06:14:01,666 - [INFO] - __main__ - (main.py).setup_middleware_first(135) - 🛠️ Настройка middleware...
+2025-11-16 06:14:01,666 - [INFO] - __main__ - (main.py).setup_middleware_first(139) - ✅ AutoRegisterMiddleware зарегистрирован
+2025-11-16 06:14:01,666 - [INFO] - __main__ - (main.py).setup_middleware_first(147) - ✅ ThrottlingMiddleware зарегистрирован для 16 команд
+2025-11-16 06:14:01,666 - [INFO] - __main__ - (main.py).on_startup(242) - 📝 Регистрация обработчиков...
+2025-11-16 06:14:01,666 - [INFO] - __main__ - (main.py).register_all_handlers(158) - 🔄 Регистрация обработчиков...
+2025-11-16 06:14:01,699 - [INFO] - root - (start.py).register_start_handler(778) - ✅ Стартовые обработчики зарегистрированы
+2025-11-16 06:14:01,699 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ start обработчики зарегистрированы
+2025-11-16 06:14:01,715 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ admin обработчики зарегистрированы
+2025-11-16 06:14:01,720 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ mute_ban обработчики зарегистрированы
+2025-11-16 06:14:01,720 - [INFO] - root - (shop.py).register_shop_handlers(483) - ✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)
+2025-11-16 06:14:01,721 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ shop обработчики зарегистрированы
+2025-11-16 06:14:01,722 - [INFO] - handlers.donate - (donate.py)._init_bonus_table(128) - ✅ Таблица user_bonuses создана/проверена
+2025-11-16 06:14:01,723 - [INFO] - root - (donate.py).register_donate_handlers(955) - ✅ Донат обработчики зарегистрированы (с бонусами за привилегии)
+2025-11-16 06:14:01,723 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ donate обработчики зарегистрированы
+2025-11-16 06:14:01,725 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_main_menu
+2025-11-16 06:14:01,725 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_admin_users_list
+2025-11-16 06:14:01,725 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ callback обработчики зарегистрированы
+2025-11-16 06:14:01,727 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ reference обработчики зарегистрированы
+2025-11-16 06:14:01,731 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ transfer обработчики зарегистрированы
+2025-11-16 06:14:01,733 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ history_service обработчики зарегистрированы
+2025-11-16 06:14:01,736 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ record обработчики зарегистрированы
+2025-11-16 06:14:01,737 - [INFO] - venv - (gifts.py).register_gift_handlers(983) - ✅ Обработчики подарков зарегистрированы с группировкой подарков
+2025-11-16 06:14:01,737 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ gifts обработчики зарегистрированы
+2025-11-16 06:14:01,741 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ marriage_handler обработчики зарегистрированы
+2025-11-16 06:14:01,743 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ roulette обработчики зарегистрированы
+2025-11-16 06:14:01,747 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ police обработчики зарегистрированы
+2025-11-16 06:14:01,750 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ thief обработчики зарегистрированы
+2025-11-16 06:14:01,754 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(863) - ✅ Обработчики 'бот ищи' зарегистрированы (ТОЧНЫЕ команды)
+2025-11-16 06:14:01,754 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(864) - 📝 Сбор данных включен для 19 команд
+2025-11-16 06:14:01,755 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(865) - 🛡️ ID товаров защиты: [4]
+2025-11-16 06:14:01,755 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_search_handler обработчики зарегистрированы
+2025-11-16 06:14:01,757 - [INFO] - handlers.chat_handlers - (chat_handlers.py).register_chat_handlers(126) - ✅ Chat handlers registered
+2025-11-16 06:14:01,757 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ chat_handlers обработчики зарегистрированы
+2025-11-16 06:14:01,761 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).register_bot_stop_handlers(482) - ✅ Обработчики 'бот стоп' зарегистрированы (с исправленной логикой и защитой)
+2025-11-16 06:14:01,761 - [INFO] - __main__ - (main.py).register_all_handlers(175) - ✅ bot_stop_handler обработчики зарегистрированы
+2025-11-16 06:14:01,761 - [INFO] - __main__ - (main.py).register_all_handlers(182) - ✅ Все обработчики зарегистрированы. Всего: 18
+2025-11-16 06:14:01,761 - [INFO] - venv - (gifts.py).ensure_gifts_on_startup(949) - 🎁 Проверка подарков в базе данных...
+2025-11-16 06:14:01,766 - [INFO] - venv - (gifts.py).ensure_gifts_exist(246) - ✅ Все подарки уже существуют в базе
+2025-11-16 06:14:01,767 - [INFO] - __main__ - (main.py).setup_bot_ban_middleware(195) - ✅ BotBanMiddleware зарегистрирован
+2025-11-16 06:14:01,767 - [INFO] - __main__ - (main.py).on_startup(251) - ⏰ Запуск задач очистки...
+2025-11-16 06:14:01,768 - [INFO] - __main__ - (main.py).start_cleanup_tasks(209) - ✅ Планировщик очистки БД запущен
+2025-11-16 06:14:01,768 - [INFO] - __main__ - (main.py).start_cleanup_tasks(214) - ✅ Задачи проверки мутов/банов запущены
+2025-11-16 06:14:01,768 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1162) - Restoring active mutes after restart...
+2025-11-16 06:14:01,768 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(214) - Restoring bot bans after restart...
+2025-11-16 06:14:01,768 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_bans_after_restart(230) - Restored 0 active bot bans
+2025-11-16 06:14:01,770 - [INFO] - handlers.mute_ban - (mute_ban.py).restore_mutes_after_restart(1213) - Active mutes restoration completed
+2025-11-16 06:14:01,771 - [INFO] - __main__ - (main.py).start_cleanup_tasks(218) - ✅ Активные муты восстановлены после перезапуска
+2025-11-16 06:14:01,771 - [INFO] - __main__ - (main.py).on_startup(254) - ✅ Бот успешно запущен
+2025-11-16 06:14:01,771 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(38) - 🔄 Планировщик очистки запущен
+2025-11-16 06:14:01,771 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(54) - ⏰ Следующая очистка через 63958 секунд (17.8 часов)
+2025-11-16 06:14:01,771 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-16 06:21:00,985 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'фух'
+2025-11-16 06:21:04,778 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'короче'
+2025-11-16 06:21:08,667 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(345) - ✅ ALLOWED REPLY: 6090751674 -> 1054684037, text: 'вернул все как было'
+2025-11-16 06:21:19,342 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).check_reply_restrictions(315) - ⏩ Пропускаем команду: только мента и вора новые оставил

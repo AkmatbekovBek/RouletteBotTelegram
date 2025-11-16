@@ -25,6 +25,8 @@ class TelegramUser(Base):
     min_win_coins = Column(Numeric(30, 0), default=0)
     max_bet = Column(Numeric(30, 0), default=0)
     is_admin = Column(Boolean, default=False)
+    robberies_today = Column(Integer, default=0, nullable=False)
+    last_robbery_reset = Column(DateTime(timezone=True), nullable=True)
 
     # Связи
     references = relationship("ReferenceUser", back_populates="owner")
