@@ -888,7 +888,7 @@ def register_roulette_handlers(dp):
     )
     dp.register_message_handler(
         handler.quick_start_roulette,
-        lambda m: m.text and m.text.lower() in ["го", "крутить", "spin", "гоу"]
+        lambda m: m.text and m.text.lower() in ["го", "крутить", "spin"]
     )
 
     # Команды управления ставками

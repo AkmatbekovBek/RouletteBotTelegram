@@ -17,9 +17,52 @@ class RouletteGame:
             "1-3": {1, 2, 3}, "4-6": {4, 5, 6},
             "7-9": {7, 8, 9}, "10-12": {10, 11, 12}
         }
+        self.last_colors = []  # Хранит историю последних цветов
+        self.max_same_color_streak = 3  # Максимальное количество одинаковых цветов подряд
 
     def spin(self) -> int:
-        return self._rng.choice(self.numbers)
+        """Генерирует число с учетом ограничения на одинаковые цвета подряд"""
+        # Преобразуем кортеж в список для работы с копией
+        available_numbers = list(self.numbers)
+
+        # Если есть история цветов, проверяем ограничение
+        if len(self.last_colors) >= self.max_same_color_streak:
+            last_color = self.last_colors[-1]
+            streak_count = 1
+
+            # Считаем сколько раз подряд последний цвет выпадал
+            for color in reversed(self.last_colors[:-1]):
+                if color == last_color:
+                    streak_count += 1
+                else:
+                    break
+
+            # Если достигли лимита, исключаем числа этого цвета
+            if streak_count >= self.max_same_color_streak:
+                if last_color == "красное":
+                    available_numbers = [n for n in available_numbers if n not in CONFIG.RED_NUMBERS]
+                elif last_color == "черное":
+                    available_numbers = [n for n in available_numbers if n not in CONFIG.BLACK_NUMBERS]
+                elif last_color == "зеленое":
+                    available_numbers = [n for n in available_numbers if n != 0]
+
+        # Проверяем, что остались доступные числа
+        if not available_numbers:
+            # Если все числа исключены, используем все исходные числа
+            available_numbers = list(self.numbers)
+
+        # Выбираем случайное число из доступных
+        result = self._rng.choice(available_numbers)
+
+        # Обновляем историю цветов
+        result_color = self.get_color(result)
+        self.last_colors.append(result_color)
+
+        # Держим только последние N цветов для оптимизации
+        if len(self.last_colors) > 10:
+            self.last_colors = self.last_colors[-10:]
+
+        return result
 
     def get_color(self, number: int) -> str:
         if number == 0:
@@ -38,9 +81,9 @@ class RouletteGame:
                 return num_value == result
             elif bet_type == "цвет":
                 return (
-                    (bet_value == "красное" and result in CONFIG.RED_NUMBERS) or
-                    (bet_value == "черное" and result in CONFIG.BLACK_NUMBERS) or
-                    (bet_value == "зеленое" and result == 0)
+                        (bet_value == "красное" and result in CONFIG.RED_NUMBERS) or
+                        (bet_value == "черное" and result in CONFIG.BLACK_NUMBERS) or
+                        (bet_value == "зеленое" and result == 0)
                 )
             elif bet_type == "группа":
                 if bet_value in self.standard_groups:
@@ -75,6 +118,22 @@ class RouletteGame:
                     pass
             return CONFIG.PAYOUTS["группа_стандарт"]
         return Decimal('1.0')
+
+    def get_color_streak_info(self) -> str:
+        """Возвращает информацию о текущей серии цветов"""
+        if not self.last_colors:
+            return "История цветов пуста"
+
+        current_color = self.last_colors[-1]
+        streak_count = 1
+
+        for color in reversed(self.last_colors[:-1]):
+            if color == current_color:
+                streak_count += 1
+            else:
+                break
+
+        return f"Текущая серия: {current_color} ({streak_count} раз подряд)"
 
 
 class RouletteKeyboard:
