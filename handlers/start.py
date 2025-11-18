@@ -646,7 +646,7 @@ class StartHandlers:
     async def agreement_button(self, callback: types.CallbackQuery) -> None:
         """Обработчик кнопки пользовательского соглашения"""
         try:
-            file_path = r'\Bek_32-2_hw-master\media\Пользовательское_Соглашение_EXEZ_кириллица.pdf'
+            file_path = r'media/Пользовательское_Соглашение_EXEZ_кириллица.pdf'
 
             # Создаем инлайн-клавиатуру с кнопкой тех. поддержки
             from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -672,6 +672,17 @@ class StartHandlers:
         except Exception as e:
             logging.error(f"❌ Ошибка отправки соглашения: {e}")
             await callback.answer("❌ Ошибка отправки файла", show_alert=True)
+
+    async def dice_game_button(self, callback: types.CallbackQuery) -> None:
+        """Переход к игре в кубики"""
+        try:
+            from handlers.dice_game import DiceGameHandler
+            dice_handler = DiceGameHandler()
+            await dice_handler.dice_command(callback.message)
+            await callback.answer()
+        except Exception as e:
+            logging.error(f"❌ Ошибка в dice_game_button: {e}")
+            await callback.answer("❌ Ошибка загрузки игры", show_alert=True)
 
     async def support_button(self, callback: types.CallbackQuery) -> None:
         """Обработчик кнопки технической поддержки"""
@@ -737,7 +748,7 @@ def register_start_handler(dp: Dispatcher) -> None:
         "donate": handlers.donate_button,
         "agreement": handlers.agreement_button,
         "support": handlers.support_button,
-
+        "dice_game": handlers.dice_game_button,
     }
 
     for callback_data, handler in callback_handlers.items():

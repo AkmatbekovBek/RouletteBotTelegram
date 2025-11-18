@@ -40,6 +40,7 @@ HANDLERS = [
     ("roulette", "register_roulette_handlers"),
     ("police", "register_police_handlers"),
     ("thief", "register_thief_handlers"),
+    ("dice_game", "register_dice_handlers"),
     ("bot_search_handler", "register_bot_search_handlers"),
     ("chat_handlers", "register_chat_handlers"),
     ("bot_stop_handler", "register_bot_stop_handlers"),
@@ -63,6 +64,7 @@ THROTTLED_COMMANDS = [
     'баланс',   # текстовые команды
     'топ',      # текстовые команды
     'перевод',  # текстовые команды
+    'кубик'
 ]
 
 # Настройка логирования

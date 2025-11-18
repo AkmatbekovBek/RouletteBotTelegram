@@ -5,15 +5,26 @@ from handlers.thief.service import ThiefService
 
 
 def normalize_cmd(text: str) -> str:
-    if not text:
+    """Нормализует команду, убирает лишние пробелы и приводит к нижнему регистру"""
+    if not text or not text.strip():
         return ""
+
+    # Убираем символы команд и упоминания
     text = re.sub(r"^[/!]", "", text)
     text = re.sub(r"@[\w_]+$", "", text)
-    return text.strip().lower().split()[0]
+
+    # Разбиваем на слова и берем первое, если оно есть
+    parts = text.strip().lower().split()
+    return parts[0] if parts else ""
 
 
 def is_rob_cmd(msg: types.Message):
-    return normalize_cmd(msg.text) in ["украсть", "ограбить", "воруй"]
+    """Проверяет, является ли сообщение командой кражи"""
+    if not msg.text or not msg.text.strip():
+        return False
+
+    normalized_cmd = normalize_cmd(msg.text)
+    return normalized_cmd in ["украсть", "ограбить", "воруй"]
 
 
 async def rob_user(message: types.Message):
