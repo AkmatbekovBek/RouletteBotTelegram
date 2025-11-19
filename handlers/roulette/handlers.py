@@ -642,7 +642,7 @@ class RouletteHandler:
         win_coins = user.win_coins or 0
         defeat_coins = user.defeat_coins or 0
         max_win = user.max_win_coins or 0
-        min_win = user.min_win_coins
+        min_win = user.min_win_coins or 0  # ← вместо None будет 0
         total_net_profit = 0
         total_payout = 0
         user_bets_text = []
@@ -670,17 +670,19 @@ class RouletteHandler:
                 'result_number': result,
                 'profit': net_profit
             })
+        logger.info(f"DEBUG: user_id={user_id}, profit={total_net_profit}, min_win={min_win}")
 
+        # Обновляем min_win при ЛЮБОМ результате (даже при проигрыше!)
         if total_net_profit != 0:
             if total_net_profit > 0:
                 win_coins += total_net_profit
                 max_win = max(max_win, total_net_profit)
             else:
                 defeat_coins += abs(total_net_profit)
+            # min_win может быть None — заменяем на 0
             if min_win is None:
-                min_win = total_net_profit
-            else:
-                min_win = min(min_win, total_net_profit)
+                min_win = 0
+            min_win = min(min_win, total_net_profit)
 
         # Сохраняем обновления для batch-обработки
         user_updates[user_id] = current_coins + total_payout
@@ -692,9 +694,7 @@ class RouletteHandler:
         # Создаем транзакции в отдельной операции
         await self._create_roulette_transactions(transactions_data)
 
-        # Добавляем рекорд если есть выигрыш
-        if total_net_profit > 0:
-            await self._add_win_record(user_id, total_net_profit, user, chat_id)
+
 
         return "\n".join(user_bets_text + win_bets_text)
 

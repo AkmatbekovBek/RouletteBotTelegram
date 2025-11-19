@@ -95,6 +95,7 @@ class DatabaseManager:
         """Контекстный менеджер для БД"""
         db = SessionLocal()
         try:
+            db.expire_all()
             yield db
         finally:
             db.close()

@@ -38,6 +38,34 @@ async def process_top_selection(callback: types.CallbackQuery):
     chat_id = callback.message.chat.id
     user_id = callback.from_user.id
 
+    # === АВТОРЕГИСТРАЦИЯ ПРИ ЛЮБОМ ВЫЗОВЕ /ТОП ===
+    db = SessionLocal()
+    try:
+        db.expire_all()
+        chat_id_for_reg = 0 if is_private else chat_id
+        user = db.query(User).filter(
+            User.tg_id == user_id,
+            User.chat_id == chat_id_for_reg
+        ).first()
+        if not user:
+            user = User(
+                tg_id=user_id,
+                chat_id=chat_id_for_reg,
+                username=callback.from_user.username or "",
+                coins=0,
+                win_coins=0,
+                defeat_coins=0,
+                max_win_coins=0,
+                min_win_coins=0,
+                max_bet_coins=0
+            )
+            db.add(user)
+            db.commit()
+    finally:
+        db.close()
+    # === КОНЕЦ АВТОРЕГИСТРАЦИИ ===
+
+    # Получаем топ
     if is_private:
         top_users, user_rank, user_value = await get_global_top_with_user_rank(user_id, category)
         title = f"🌍 Глобальный {TOP_CATEGORIES[category]}"
@@ -48,7 +76,6 @@ async def process_top_selection(callback: types.CallbackQuery):
     lines = [f"{title}:\n"]
     for idx, (username, value) in enumerate(top_users, start=1):
         name = (username or "Аноним")[:15]
-        # Единственное место, где формируем display_value
         display_value = abs(value) if category == 'max_loss' else value
         lines.append(f"{idx}. {name} — {display_value:,}")
 
@@ -64,13 +91,14 @@ async def process_top_selection(callback: types.CallbackQuery):
 async def get_top_with_user_rank(chat_id: int, user_id: int, category: str):
     db = SessionLocal()
     try:
-        column_map = {
+        db.expire_all()
+        field_map = {
             'balance': User.coins,
             'max_win': User.max_win_coins,
             'max_loss': User.min_win_coins,
             'max_bet': User.max_bet_coins
         }
-        order_col = column_map[category]
+        order_col = field_map[category]
 
         top_query = (
             db.query(User.username, order_col)
@@ -79,9 +107,8 @@ async def get_top_with_user_rank(chat_id: int, user_id: int, category: str):
             .limit(10)
             .all()
         )
-        top_users = [(u.username, getattr(u, category)) for u in top_query]
+        top_users = [(u.username, getattr(u, order_col.key)) for u in top_query]
 
-        # Без фильтра order_col > 0!
         subq = (
             db.query(
                 User.tg_id,
@@ -101,13 +128,13 @@ async def get_top_with_user_rank(chat_id: int, user_id: int, category: str):
 async def get_global_top_with_user_rank(user_id: int, category: str):
     db = SessionLocal()
     try:
-        column_map = {
+        field_map = {
             'balance': User.coins,
             'max_win': User.max_win_coins,
             'max_loss': User.min_win_coins,
             'max_bet': User.max_bet_coins
         }
-        order_col = column_map[category]
+        order_col = field_map[category]
 
         top_query = (
             db.query(User.username, order_col)
@@ -115,7 +142,7 @@ async def get_global_top_with_user_rank(user_id: int, category: str):
             .limit(30)
             .all()
         )
-        top_users = [(u.username, getattr(u, category)) for u in top_query]
+        top_users = [(u.username, getattr(u, order_col.key)) for u in top_query]
 
         subq = (
             db.query(

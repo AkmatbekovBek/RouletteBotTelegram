@@ -7,8 +7,39 @@ from typing import Optional, List, Tuple
 from datetime import datetime, date, timedelta
 import database.models as models
 from .models import ModerationLog, ModerationAction
+from database.models import User
 
 class UserRepository:
+    @staticmethod
+    def get_or_create_user(db: Session, tg_id: int, chat_id: int, username: str = "") -> User:
+        user = db.query(User).filter(
+            User.tg_id == tg_id,
+            User.chat_id == chat_id
+        ).first()
+
+        if not user:
+            user = User(
+                tg_id=tg_id,
+                chat_id=chat_id,
+                username=username[:32] if username else "",
+                coins=0,
+                win_coins=0,
+                defeat_coins=0,
+                max_win_coins=0,
+                min_win_coins=0,
+                max_bet_coins=0
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        # Обновляем username, если изменился
+        if username and user.username != username:
+            user.username = username[:32]
+            db.commit()
+
+        return user
+
     @staticmethod
     def get_or_create_user(db: Session, telegram_id: int, username: str, first_name: str,
                            last_name: str = None) -> models.TelegramUser:

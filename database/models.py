@@ -368,13 +368,13 @@ class ModerationLog(Base):
 
 class User(Base):
     __tablename__ = 'users'
-
     id = Column(Integer, primary_key=True)
-    tg_id = Column(BigInteger, index=True)      # ← обязательно
-    chat_id = Column(BigInteger, index=True)   # ← обязательно
-    username = Column(String, nullable=True)
-    balance = Column(Integer, default=0)
-    max_win = Column(Integer, default=0)
-    max_loss = Column(Integer, default=0)
-    max_bet = Column(Integer, default=0)
+    tg_id = Column(BigInteger, index=True)
+    chat_id = Column(BigInteger, index=True)
+    username = Column(String)
+    coins = Column(Integer, default=0)
+    win_coins = Column(Integer, default=0)
+    defeat_coins = Column(Integer, default=0)
+    max_win_coins = Column(Integer, default=0)
+    min_win_coins = Column(Integer, default=0)   # ← важно: default=0, не NULL
     max_bet_coins = Column(Integer, default=0)

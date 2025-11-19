@@ -21,7 +21,6 @@ from handlers.cleanup_scheduler import CleanupScheduler
 from config import dp
 from database import engine, SessionLocal
 from database.models import Base
-from middlewares.auto_register_middleware import AutoRegisterMiddleware
 
 from handlers.admin.mute_ban import mute_ban_manager
 
@@ -94,6 +93,7 @@ def setup_database() -> bool:
         # Проверяем подключение (синхронно) с использованием text()
         db = SessionLocal()
         try:
+            db.expire_all()
             db.execute(text("SELECT 1"))
             db.commit()
             logger.info("✅ Подключение к базе данных установлено")
@@ -117,6 +117,7 @@ def cleanup_old_limits() -> None:
 
         db = SessionLocal()
         try:
+            db.expire_all()
             deleted_count = TransferLimitRepository.clean_old_transfers(db)
             if deleted_count > 0:
                 logger.info(f"✅ Очищено {deleted_count} старых записей лимитов")
@@ -130,32 +131,6 @@ def cleanup_old_limits() -> None:
 
     except Exception as e:
         logger.error(f"❌ Ошибка инициализации очистки лимитов: {e}")
-
-
-async def setup_middleware_first():
-    """Настройка middleware ДО регистрации обработчиков - ЭТО ВАЖНО!"""
-    try:
-        from middlewares.auto_register_middleware import AutoRegisterMiddleware
-
-        logger.info("🛠️ Настройка middleware...")
-
-        # 1. СНАЧАЛА регистрируем AutoRegisterMiddleware (самый первый!)
-        dp.middleware.setup(AutoRegisterMiddleware())
-        logger.info("✅ AutoRegisterMiddleware зарегистрирован")
-
-        # 2. Затем ThrottlingMiddleware
-        setup_throttling(
-            dp,
-            throttled_commands=THROTTLED_COMMANDS,
-            limit=2  # 2 секунды для тестирования
-        )
-        logger.info(f"✅ ThrottlingMiddleware зарегистрирован для {len(THROTTLED_COMMANDS)} команд")
-
-        return True
-
-    except Exception as e:
-        logger.error(f"❌ Ошибка настройки middleware: {e}")
-        return False
 
 
 def register_all_handlers():
@@ -224,10 +199,10 @@ async def start_cleanup_tasks(mute_ban_manager):
 
 
 async def on_startup(_):
-    """Действия при запуске бота - ПРАВИЛЬНЫЙ ПОРЯДОК!"""
+    """Действия при запуске бота"""
     logger.info("🚀 Запуск бота...")
 
-    # 1. Синхронные операции с БД
+    # 1. Настройка БД
     logger.info("📊 Настройка базы данных...")
     if not setup_database():
         raise RuntimeError("Не удалось настроить базу данных")
@@ -235,22 +210,15 @@ async def on_startup(_):
     logger.info("🧹 Очистка старых данных...")
     cleanup_old_limits()
 
-    # 2. СНАЧАЛА настраиваем middleware (кроме BotBanMiddleware)
-    if not await setup_middleware_first():
-        raise RuntimeError("Не удалось настроить middleware")
-
-    # 3. 🔥 ОБЯЗАТЕЛЬНО: регистрируем ВСЕ обработчики (start, admin, shop и т.д.)
+    # 2. Регистрация обработчиков
     logger.info("📝 Регистрация обработчиков...")
     global mute_ban_manager
-    mute_ban_manager = register_all_handlers()  # ← ЭТА СТРОКА БЫЛА УДАЛЕНА — ВЕРНИ ЕЁ!
+    mute_ban_manager = register_all_handlers()
 
-    # 4. Подарки (можно оставить здесь, но логичнее до регистрации — не критично)
+    # 3. Подарки (можно оставить)
     await ensure_gifts_on_startup()
 
-    # 5. Теперь настраиваем BotBanMiddleware (уже есть mute_ban_manager)
-    await setup_bot_ban_middleware(mute_ban_manager)
-
-    # 6. Запуск задач очистки
+    # 4. Задачи очистки (если нужны)
     logger.info("⏰ Запуск задач очистки...")
     await start_cleanup_tasks(mute_ban_manager)
 
