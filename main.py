@@ -11,6 +11,7 @@ from handlers.admin import register_admin_handlers
 
 from aiogram import executor, Dispatcher
 from aiogram.types import AllowedUpdates
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from handlers.gifts import ensure_gifts_on_startup
 from middlewares.bot_ban_middleware import BotBanMiddleware
@@ -20,6 +21,7 @@ from handlers.cleanup_scheduler import CleanupScheduler
 from config import dp
 from database import engine, SessionLocal
 from database.models import Base
+from middlewares.auto_register_middleware import AutoRegisterMiddleware
 
 from handlers.admin.mute_ban import mute_ban_manager
 

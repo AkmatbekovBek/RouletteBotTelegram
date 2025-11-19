@@ -364,3 +364,17 @@ class ModerationLog(Base):
     reason = Column(String, default="")
     duration_minutes = Column(Integer, nullable=True)  # только для mute
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True)
+    tg_id = Column(BigInteger, index=True)      # ← обязательно
+    chat_id = Column(BigInteger, index=True)   # ← обязательно
+    username = Column(String, nullable=True)
+    balance = Column(Integer, default=0)
+    max_win = Column(Integer, default=0)
+    max_loss = Column(Integer, default=0)
+    max_bet = Column(Integer, default=0)
+    max_bet_coins = Column(Integer, default=0)

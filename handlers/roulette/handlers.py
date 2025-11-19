@@ -671,17 +671,23 @@ class RouletteHandler:
                 'profit': net_profit
             })
 
-        # Обновляем статистику
-        if total_net_profit < 0:
-            defeat_coins += abs(total_net_profit)
-        elif total_net_profit > 0:
-            win_coins += total_net_profit
-            max_win = max(max_win, total_net_profit)
-            min_win = total_net_profit if min_win is None else min(min_win, total_net_profit)
+        if total_net_profit != 0:
+            if total_net_profit > 0:
+                win_coins += total_net_profit
+                max_win = max(max_win, total_net_profit)
+            else:
+                defeat_coins += abs(total_net_profit)
+            if min_win is None:
+                min_win = total_net_profit
+            else:
+                min_win = min(min_win, total_net_profit)
 
         # Сохраняем обновления для batch-обработки
         user_updates[user_id] = current_coins + total_payout
-        user_stats_updates[user_id] = (win_coins, defeat_coins, max_win, min_win)
+        current_max_bet = max(bet.amount for bet in user_session.bets) if user_session.bets else 0
+        new_max_bet = max(getattr(user, 'max_bet_coins', 0), current_max_bet)
+
+        user_stats_updates[user_id] = (win_coins, defeat_coins, max_win, min_win, new_max_bet)
 
         # Создаем транзакции в отдельной операции
         await self._create_roulette_transactions(transactions_data)
@@ -713,17 +719,6 @@ class RouletteHandler:
             await DatabaseManager.update_users_batch(user_updates, user_stats_updates)
         except Exception as e:
             logger.error(f"❌ Ошибка при пакетном обновлении БД: {e}")
-
-    async def _add_win_record(self, user_id: int, net_profit: int, user, chat_id: int):
-        """Добавляет запись о рекорде при выигрыше"""
-        try:
-            from handlers.record import RecordHandler
-            record_handler = RecordHandler()
-            username = user.username or ''
-            first_name = user.first_name or ''
-            await record_handler.add_score(user_id, net_profit, chat_id, username, first_name)
-        except Exception as e:
-            logger.error(f"⚠️ Ошибка добавления рекорда: {e}")
 
     # -------------------------------------------------------------------------
     # ПОВТОРИТЬ/УДВОИТЬ

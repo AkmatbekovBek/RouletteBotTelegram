@@ -62,7 +62,7 @@ class DatabaseManager:
                 for user_id, stats in user_stats_updates.items():
                     user = UserRepository.get_user_by_telegram_id(db, user_id)
                     if user:
-                        win_coins, defeat_coins, max_win, min_win = stats
+                        win_coins, defeat_coins, max_win, min_win, max_bet = stats  # ← 5 элементов
                         if win_coins is not None:
                             user.win_coins = win_coins
                         if defeat_coins is not None:
@@ -71,6 +71,8 @@ class DatabaseManager:
                             user.max_win_coins = max_win
                         if min_win is not None:
                             user.min_win_coins = min_win
+                        if max_bet is not None:  # ← добавлено
+                            user.max_bet_coins = max_bet
                 db.commit()
                 logger.info(f"✅ Пакетное обновление: {len(user_updates)} пользователей")
             except Exception as e:
