@@ -14,6 +14,7 @@ from aiogram.types import AllowedUpdates
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from handlers.gifts import ensure_gifts_on_startup
+from middlewares.auto_register_middleware import AutoRegisterMiddleware
 from middlewares.bot_ban_middleware import BotBanMiddleware
 from middlewares.throttling import setup_throttling
 
@@ -229,6 +230,7 @@ async def stop_donate_scheduler():
 async def on_startup(_):
     """Действия при запуске бота"""
     logger.info("🚀 Запуск бота...")
+    dp.middleware.setup(AutoRegisterMiddleware())
 
     # 1. Настройка БД
     logger.info("📊 Настройка базы данных...")

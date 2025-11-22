@@ -23996,3 +23996,452 @@ aiogram.utils.exceptions.NetworkError: Aiohttp client throws an error: ServerDis
 2025-11-23 00:01:06,667 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(262) - 📊 Найдено истекающих через 1 день: 0
 2025-11-23 00:01:06,667 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(263) - 📊 Найдено уже истекших: 0
 2025-11-23 00:01:06,668 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-23 00:14:31,022 - [INFO] - __main__ - (main.py).main(322) - 🔄 Запуск бота
+2025-11-23 00:14:31,345 - [INFO] - aiogram - (executor.py)._welcome(362) - Bot: тестайс [@testaicebot]
+2025-11-23 00:14:31,553 - [WARNING] - aiogram - (executor.py)._skip_updates(358) - Updates were skipped successfully.
+2025-11-23 00:14:31,553 - [INFO] - __main__ - (main.py).on_startup(231) - 🚀 Запуск бота...
+2025-11-23 00:14:31,554 - [INFO] - __main__ - (main.py).on_startup(234) - 📊 Настройка базы данных...
+2025-11-23 00:14:31,702 - [INFO] - __main__ - (main.py).setup_database(92) - ✅ Все таблицы базы данных созданы
+2025-11-23 00:14:31,703 - [INFO] - __main__ - (main.py).setup_database(100) - ✅ Подключение к базе данных установлено
+2025-11-23 00:14:31,703 - [INFO] - __main__ - (main.py).on_startup(238) - 🧹 Очистка старых данных...
+2025-11-23 00:14:31,740 - [INFO] - __main__ - (main.py).cleanup_old_limits(126) - ✅ Старые записи лимитов не найдены
+2025-11-23 00:14:31,740 - [INFO] - __main__ - (main.py).on_startup(242) - 📝 Регистрация обработчиков...
+2025-11-23 00:14:31,740 - [INFO] - __main__ - (main.py).register_all_handlers(139) - 🔄 Регистрация обработчиков...
+2025-11-23 00:14:31,795 - [INFO] - root - (start.py).register_start_handler(761) - ✅ Стартовые обработчики зарегистрированы
+2025-11-23 00:14:31,795 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ start обработчики зарегистрированы
+2025-11-23 00:14:31,799 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ admin обработчики зарегистрированы
+2025-11-23 00:14:31,799 - [INFO] - root - (shop.py).register_shop_handlers(483) - ✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)
+2025-11-23 00:14:31,799 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ shop обработчики зарегистрированы
+2025-11-23 00:14:31,835 - [INFO] - handlers.donate.bonus - (bonus.py)._init_bonus_table(76) - ✅ Таблица user_bonuses создана/проверена
+2025-11-23 00:14:31,836 - [INFO] - root - (handlers.py).register_donate_handlers(435) - ✅ Донат обработчики зарегистрированы (автоматические бонусы)
+2025-11-23 00:14:31,836 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ donate обработчики зарегистрированы
+2025-11-23 00:14:31,838 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_main_menu
+2025-11-23 00:14:31,838 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_admin_users_list
+2025-11-23 00:14:31,838 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ callback обработчики зарегистрированы
+2025-11-23 00:14:31,840 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ reference обработчики зарегистрированы
+2025-11-23 00:14:31,845 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ transfer обработчики зарегистрированы
+2025-11-23 00:14:31,847 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ history_service обработчики зарегистрированы
+2025-11-23 00:14:31,864 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ record обработчики зарегистрированы
+2025-11-23 00:14:31,865 - [INFO] - venv - (gifts.py).register_gift_handlers(983) - ✅ Обработчики подарков зарегистрированы с группировкой подарков
+2025-11-23 00:14:31,865 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ gifts обработчики зарегистрированы
+2025-11-23 00:14:31,867 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ marriage_handler обработчики зарегистрированы
+2025-11-23 00:14:31,869 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ roulette обработчики зарегистрированы
+2025-11-23 00:14:31,873 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ police обработчики зарегистрированы
+2025-11-23 00:14:31,877 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ thief обработчики зарегистрированы
+2025-11-23 00:14:31,881 - [INFO] - root - (dice_game.py).register_dice_handlers(399) - ✅ Игра 'Кубик' зарегистрирована (работает везде)
+2025-11-23 00:14:31,881 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ dice_game обработчики зарегистрированы
+2025-11-23 00:14:31,883 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(863) - ✅ Обработчики 'бот ищи' зарегистрированы (ТОЧНЫЕ команды)
+2025-11-23 00:14:31,883 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(864) - 📝 Сбор данных включен для 20 команд
+2025-11-23 00:14:31,884 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(865) - 🛡️ ID товаров защиты: [4]
+2025-11-23 00:14:31,884 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ bot_search_handler обработчики зарегистрированы
+2025-11-23 00:14:31,885 - [INFO] - handlers.chat_handlers - (chat_handlers.py).register_chat_handlers(126) - ✅ Chat handlers registered
+2025-11-23 00:14:31,885 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ chat_handlers обработчики зарегистрированы
+2025-11-23 00:14:31,888 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).register_bot_stop_handlers(482) - ✅ Обработчики 'бот стоп' зарегистрированы (с исправленной логикой и защитой)
+2025-11-23 00:14:31,888 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ bot_stop_handler обработчики зарегистрированы
+2025-11-23 00:14:31,888 - [INFO] - __main__ - (main.py).register_all_handlers(163) - ✅ Все обработчики зарегистрированы. Всего: 18
+2025-11-23 00:14:31,888 - [INFO] - venv - (gifts.py).ensure_gifts_on_startup(949) - 🎁 Проверка подарков в базе данных...
+2025-11-23 00:14:31,894 - [INFO] - venv - (gifts.py).ensure_gifts_exist(246) - ✅ Все подарки уже существуют в базе
+2025-11-23 00:14:31,894 - [INFO] - __main__ - (main.py).on_startup(250) - ⏰ Запуск задач очистки...
+2025-11-23 00:14:31,895 - [INFO] - __main__ - (main.py).start_cleanup_tasks(186) - ✅ Планировщик очистки БД запущен
+2025-11-23 00:14:31,895 - [INFO] - __main__ - (main.py).start_cleanup_tasks(191) - ✅ Задачи проверки мутов/банов запущены
+2025-11-23 00:14:31,895 - [INFO] - handlers.admin.mute_ban - (mute_ban.py).restore_mutes_after_restart(235) - ⏭️ Восстановление мутов после перезапуска (не реализовано)
+2025-11-23 00:14:31,895 - [INFO] - __main__ - (main.py).start_cleanup_tasks(195) - ✅ Активные муты восстановлены после перезапуска
+2025-11-23 00:14:31,895 - [INFO] - __main__ - (main.py).on_startup(254) - 💰 Запуск планировщика донат-задач...
+2025-11-23 00:14:31,900 - [INFO] - handlers.donate.bonus - (bonus.py)._init_bonus_table(76) - ✅ Таблица user_bonuses создана/проверена
+2025-11-23 00:14:31,900 - [INFO] - __main__ - (main.py).start_donate_scheduler(210) - ✅ Планировщик донат-задач запущен
+2025-11-23 00:14:31,900 - [INFO] - __main__ - (main.py).on_startup(257) - ✅ Бот успешно запущен
+2025-11-23 00:14:31,900 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(38) - 🔄 Планировщик очистки запущен
+2025-11-23 00:14:31,900 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(54) - ⏰ Следующая очистка через 85528 секунд (23.8 часов)
+2025-11-23 00:14:31,900 - [INFO] - handlers.donate.scheduler - (scheduler.py).start_scheduler(24) - 🚀 Запуск планировщика донат-задач
+2025-11-23 00:14:31,900 - [INFO] - handlers.donate.scheduler - (scheduler.py)._process_daily_tasks(47) - 📅 Выполнение ежедневных задач
+2025-11-23 00:14:31,904 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(131) - 🔍 Начинаем обработку 5 пользователей
+2025-11-23 00:14:31,908 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(216) - ⏰ Пользователь 6090751674 еще не готов к бонусу. Осталось: 14.9 часов
+2025-11-23 00:14:31,908 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(216) - ⏰ Пользователь 7895562652 еще не готов к бонусу. Осталось: 22.7 часов
+2025-11-23 00:14:31,909 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(216) - ⏰ Пользователь 8325704610 еще не готов к бонусу. Осталось: 23.2 часов
+2025-11-23 00:14:31,909 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(216) - ⏰ Пользователь 1054684037 еще не готов к бонусу. Осталось: 15.3 часов
+2025-11-23 00:14:31,910 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(216) - ⏰ Пользователь 7326913977 еще не готов к бонусу. Осталось: 14.9 часов
+2025-11-23 00:14:31,910 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(219) - 🎯 Автоматические бонусы обработаны: 5 пользователей, 0 получили бонусы
+2025-11-23 00:14:31,910 - [INFO] - handlers.donate.scheduler - (scheduler.py)._process_daily_tasks(51) - 🎁 Начислено автоматических бонусов: 0
+2025-11-23 00:14:31,910 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(235) - 🔍 Начинаем проверку истекающих привилегий...
+2025-11-23 00:14:31,915 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(262) - 📊 Найдено истекающих через 1 день: 0
+2025-11-23 00:14:31,915 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(263) - 📊 Найдено уже истекших: 0
+2025-11-23 00:14:31,916 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-23 00:16:44,314 - [INFO] - __main__ - (main.py).signal_handler(314) - 📞 Получен сигнал 2. Завершение работы...
+2025-11-23 00:16:44,314 - [INFO] - __main__ - (main.py).on_shutdown(262) - 🛑 Завершение работы бота...
+2025-11-23 00:16:44,314 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(147) - 🛑 Остановка планировщика очистки...
+2025-11-23 00:16:44,314 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(156) - ✅ Планировщик очистки остановлен
+2025-11-23 00:16:44,314 - [INFO] - __main__ - (main.py).on_shutdown(270) - ✅ Планировщик очистки остановлен
+2025-11-23 00:16:44,314 - [INFO] - __main__ - (main.py).on_shutdown(279) - ✅ Задачи мутов/банов остановлены
+2025-11-23 00:16:44,314 - [INFO] - handlers.donate.scheduler - (scheduler.py).stop_scheduler(42) - 🛑 Остановка планировщика донат-задач
+2025-11-23 00:16:44,314 - [INFO] - __main__ - (main.py).stop_donate_scheduler(224) - ✅ Планировщик донат-задач остановлен
+2025-11-23 00:16:44,316 - [INFO] - __main__ - (main.py).on_shutdown(290) - ✅ Соединения с БД закрыты
+2025-11-23 00:16:44,316 - [INFO] - __main__ - (main.py).on_shutdown(298) - ✅ Хранилище диспетчера закрыто
+2025-11-23 00:16:44,316 - [INFO] - __main__ - (main.py).on_shutdown(305) - ✅ Бот остановлен
+2025-11-23 00:16:44,316 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).stop_polling(433) - Stop polling...
+2025-11-23 00:16:44,316 - [ERROR] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(390) - Cause exception while getting updates.
+Traceback (most recent call last):
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\api.py", line 139, in make_request
+    async with session.post(url, data=req, **kwargs) as response:
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client.py", line 1488, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client.py", line 770, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client.py", line 748, in _connect_and_send_request
+    await resp.start(conn)
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client_reqrep.py", line 532, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\streams.py", line 672, in read
+    await self._waiter
+aiohttp.client_exceptions.ServerDisconnectedError: Server disconnected
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 381, in start_polling
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\bot.py", line 110, in get_updates
+    result = await self.request(api.Methods.GET_UPDATES, payload)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\base.py", line 236, in request
+    return await api.make_request(await self.get_session(), self.server, self.__token, method, data, files,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\api.py", line 142, in make_request
+    raise exceptions.NetworkError(f"aiohttp client throws an error: {e.__class__.__name__}: {e}")
+aiogram.utils.exceptions.NetworkError: Aiohttp client throws an error: ServerDisconnectedError: Server disconnected
+2025-11-23 00:16:44,325 - [WARNING] - aiogram - (executor.py).start_polling(329) - Goodbye!
+2025-11-23 00:16:51,325 - [INFO] - __main__ - (main.py).main(322) - 🔄 Запуск бота
+2025-11-23 00:16:51,648 - [INFO] - aiogram - (executor.py)._welcome(362) - Bot: тестайс [@testaicebot]
+2025-11-23 00:16:51,849 - [WARNING] - aiogram - (executor.py)._skip_updates(358) - Updates were skipped successfully.
+2025-11-23 00:16:51,850 - [INFO] - __main__ - (main.py).on_startup(231) - 🚀 Запуск бота...
+2025-11-23 00:16:51,850 - [INFO] - __main__ - (main.py).on_startup(234) - 📊 Настройка базы данных...
+2025-11-23 00:16:51,918 - [INFO] - __main__ - (main.py).setup_database(92) - ✅ Все таблицы базы данных созданы
+2025-11-23 00:16:51,919 - [INFO] - __main__ - (main.py).setup_database(100) - ✅ Подключение к базе данных установлено
+2025-11-23 00:16:51,919 - [INFO] - __main__ - (main.py).on_startup(238) - 🧹 Очистка старых данных...
+2025-11-23 00:16:51,938 - [INFO] - __main__ - (main.py).cleanup_old_limits(126) - ✅ Старые записи лимитов не найдены
+2025-11-23 00:16:51,938 - [INFO] - __main__ - (main.py).on_startup(242) - 📝 Регистрация обработчиков...
+2025-11-23 00:16:51,938 - [INFO] - __main__ - (main.py).register_all_handlers(139) - 🔄 Регистрация обработчиков...
+2025-11-23 00:16:51,958 - [INFO] - root - (start.py).register_start_handler(761) - ✅ Стартовые обработчики зарегистрированы
+2025-11-23 00:16:51,958 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ start обработчики зарегистрированы
+2025-11-23 00:16:51,960 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ admin обработчики зарегистрированы
+2025-11-23 00:16:51,961 - [INFO] - root - (shop.py).register_shop_handlers(483) - ✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)
+2025-11-23 00:16:51,961 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ shop обработчики зарегистрированы
+2025-11-23 00:16:51,969 - [INFO] - handlers.donate.bonus - (bonus.py)._init_bonus_table(76) - ✅ Таблица user_bonuses создана/проверена
+2025-11-23 00:16:51,970 - [INFO] - root - (handlers.py).register_donate_handlers(435) - ✅ Донат обработчики зарегистрированы (автоматические бонусы)
+2025-11-23 00:16:51,970 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ donate обработчики зарегистрированы
+2025-11-23 00:16:51,971 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_main_menu
+2025-11-23 00:16:51,971 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_admin_users_list
+2025-11-23 00:16:51,971 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ callback обработчики зарегистрированы
+2025-11-23 00:16:51,972 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ reference обработчики зарегистрированы
+2025-11-23 00:16:51,974 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ transfer обработчики зарегистрированы
+2025-11-23 00:16:51,975 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ history_service обработчики зарегистрированы
+2025-11-23 00:16:51,976 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ record обработчики зарегистрированы
+2025-11-23 00:16:51,977 - [INFO] - venv - (gifts.py).register_gift_handlers(983) - ✅ Обработчики подарков зарегистрированы с группировкой подарков
+2025-11-23 00:16:51,977 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ gifts обработчики зарегистрированы
+2025-11-23 00:16:51,978 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ marriage_handler обработчики зарегистрированы
+2025-11-23 00:16:51,979 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ roulette обработчики зарегистрированы
+2025-11-23 00:16:51,982 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ police обработчики зарегистрированы
+2025-11-23 00:16:51,984 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ thief обработчики зарегистрированы
+2025-11-23 00:16:51,986 - [INFO] - root - (dice_game.py).register_dice_handlers(399) - ✅ Игра 'Кубик' зарегистрирована (работает везде)
+2025-11-23 00:16:51,986 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ dice_game обработчики зарегистрированы
+2025-11-23 00:16:51,988 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(863) - ✅ Обработчики 'бот ищи' зарегистрированы (ТОЧНЫЕ команды)
+2025-11-23 00:16:51,988 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(864) - 📝 Сбор данных включен для 20 команд
+2025-11-23 00:16:51,988 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(865) - 🛡️ ID товаров защиты: [4]
+2025-11-23 00:16:51,988 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ bot_search_handler обработчики зарегистрированы
+2025-11-23 00:16:51,989 - [INFO] - handlers.chat_handlers - (chat_handlers.py).register_chat_handlers(126) - ✅ Chat handlers registered
+2025-11-23 00:16:51,989 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ chat_handlers обработчики зарегистрированы
+2025-11-23 00:16:51,991 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).register_bot_stop_handlers(482) - ✅ Обработчики 'бот стоп' зарегистрированы (с исправленной логикой и защитой)
+2025-11-23 00:16:51,991 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ bot_stop_handler обработчики зарегистрированы
+2025-11-23 00:16:51,991 - [INFO] - __main__ - (main.py).register_all_handlers(163) - ✅ Все обработчики зарегистрированы. Всего: 18
+2025-11-23 00:16:51,991 - [INFO] - venv - (gifts.py).ensure_gifts_on_startup(949) - 🎁 Проверка подарков в базе данных...
+2025-11-23 00:16:52,003 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Кольцо
+2025-11-23 00:16:52,005 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Бриллиант
+2025-11-23 00:16:52,006 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Тигр
+2025-11-23 00:16:52,007 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Панда
+2025-11-23 00:16:52,008 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Цыплёнок
+2025-11-23 00:16:52,010 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Чебурашка
+2025-11-23 00:16:52,011 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Кулон
+2025-11-23 00:16:52,012 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Лимон
+2025-11-23 00:16:52,013 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Шаурма
+2025-11-23 00:16:52,014 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Хуй
+2025-11-23 00:16:52,015 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Лев
+2025-11-23 00:16:52,016 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Роза
+2025-11-23 00:16:52,017 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Шоколад
+2025-11-23 00:16:52,018 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Сердце
+2025-11-23 00:16:52,019 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Подарок
+2025-11-23 00:16:52,020 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Мишка
+2025-11-23 00:16:52,021 - [INFO] - venv - (gifts.py).ensure_gifts_exist(244) - ✅ Создано 16 подарков
+2025-11-23 00:16:52,021 - [INFO] - __main__ - (main.py).on_startup(250) - ⏰ Запуск задач очистки...
+2025-11-23 00:16:52,021 - [INFO] - __main__ - (main.py).start_cleanup_tasks(186) - ✅ Планировщик очистки БД запущен
+2025-11-23 00:16:52,021 - [INFO] - __main__ - (main.py).start_cleanup_tasks(191) - ✅ Задачи проверки мутов/банов запущены
+2025-11-23 00:16:52,021 - [INFO] - handlers.admin.mute_ban - (mute_ban.py).restore_mutes_after_restart(235) - ⏭️ Восстановление мутов после перезапуска (не реализовано)
+2025-11-23 00:16:52,021 - [INFO] - __main__ - (main.py).start_cleanup_tasks(195) - ✅ Активные муты восстановлены после перезапуска
+2025-11-23 00:16:52,021 - [INFO] - __main__ - (main.py).on_startup(254) - 💰 Запуск планировщика донат-задач...
+2025-11-23 00:16:52,024 - [INFO] - handlers.donate.bonus - (bonus.py)._init_bonus_table(76) - ✅ Таблица user_bonuses создана/проверена
+2025-11-23 00:16:52,024 - [INFO] - __main__ - (main.py).start_donate_scheduler(210) - ✅ Планировщик донат-задач запущен
+2025-11-23 00:16:52,024 - [INFO] - __main__ - (main.py).on_startup(257) - ✅ Бот успешно запущен
+2025-11-23 00:16:52,024 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(38) - 🔄 Планировщик очистки запущен
+2025-11-23 00:16:52,024 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(54) - ⏰ Следующая очистка через 85388 секунд (23.7 часов)
+2025-11-23 00:16:52,024 - [INFO] - handlers.donate.scheduler - (scheduler.py).start_scheduler(24) - 🚀 Запуск планировщика донат-задач
+2025-11-23 00:16:52,024 - [INFO] - handlers.donate.scheduler - (scheduler.py)._process_daily_tasks(47) - 📅 Выполнение ежедневных задач
+2025-11-23 00:16:52,026 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(131) - 🔍 Начинаем обработку 5 пользователей
+2025-11-23 00:16:52,027 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(216) - ⏰ Пользователь 6090751674 еще не готов к бонусу. Осталось: 14.8 часов
+2025-11-23 00:16:52,027 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(216) - ⏰ Пользователь 7895562652 еще не готов к бонусу. Осталось: 22.7 часов
+2025-11-23 00:16:52,028 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(216) - ⏰ Пользователь 8325704610 еще не готов к бонусу. Осталось: 23.2 часов
+2025-11-23 00:16:52,028 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(216) - ⏰ Пользователь 1054684037 еще не готов к бонусу. Осталось: 15.3 часов
+2025-11-23 00:16:52,028 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(216) - ⏰ Пользователь 7326913977 еще не готов к бонусу. Осталось: 14.8 часов
+2025-11-23 00:16:52,029 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(219) - 🎯 Автоматические бонусы обработаны: 5 пользователей, 0 получили бонусы
+2025-11-23 00:16:52,029 - [INFO] - handlers.donate.scheduler - (scheduler.py)._process_daily_tasks(51) - 🎁 Начислено автоматических бонусов: 0
+2025-11-23 00:16:52,029 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(235) - 🔍 Начинаем проверку истекающих привилегий...
+2025-11-23 00:16:52,030 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(262) - 📊 Найдено истекающих через 1 день: 0
+2025-11-23 00:16:52,031 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(263) - 📊 Найдено уже истекших: 0
+2025-11-23 00:16:52,031 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-23 00:18:35,700 - [INFO] - __main__ - (main.py).signal_handler(314) - 📞 Получен сигнал 2. Завершение работы...
+2025-11-23 00:18:35,700 - [INFO] - __main__ - (main.py).on_shutdown(262) - 🛑 Завершение работы бота...
+2025-11-23 00:18:35,701 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(147) - 🛑 Остановка планировщика очистки...
+2025-11-23 00:18:35,701 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(156) - ✅ Планировщик очистки остановлен
+2025-11-23 00:18:35,701 - [INFO] - __main__ - (main.py).on_shutdown(270) - ✅ Планировщик очистки остановлен
+2025-11-23 00:18:35,701 - [INFO] - __main__ - (main.py).on_shutdown(279) - ✅ Задачи мутов/банов остановлены
+2025-11-23 00:18:35,701 - [INFO] - handlers.donate.scheduler - (scheduler.py).stop_scheduler(42) - 🛑 Остановка планировщика донат-задач
+2025-11-23 00:18:35,701 - [INFO] - __main__ - (main.py).stop_donate_scheduler(224) - ✅ Планировщик донат-задач остановлен
+2025-11-23 00:18:35,701 - [INFO] - __main__ - (main.py).on_shutdown(290) - ✅ Соединения с БД закрыты
+2025-11-23 00:18:35,701 - [INFO] - __main__ - (main.py).on_shutdown(298) - ✅ Хранилище диспетчера закрыто
+2025-11-23 00:18:35,701 - [INFO] - __main__ - (main.py).on_shutdown(305) - ✅ Бот остановлен
+2025-11-23 00:18:35,701 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).stop_polling(433) - Stop polling...
+2025-11-23 00:18:35,701 - [ERROR] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(390) - Cause exception while getting updates.
+Traceback (most recent call last):
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\api.py", line 139, in make_request
+    async with session.post(url, data=req, **kwargs) as response:
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client.py", line 1488, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client.py", line 770, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client.py", line 748, in _connect_and_send_request
+    await resp.start(conn)
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client_reqrep.py", line 532, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\streams.py", line 672, in read
+    await self._waiter
+aiohttp.client_exceptions.ServerDisconnectedError: Server disconnected
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 381, in start_polling
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\bot.py", line 110, in get_updates
+    result = await self.request(api.Methods.GET_UPDATES, payload)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\base.py", line 236, in request
+    return await api.make_request(await self.get_session(), self.server, self.__token, method, data, files,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\api.py", line 142, in make_request
+    raise exceptions.NetworkError(f"aiohttp client throws an error: {e.__class__.__name__}: {e}")
+aiogram.utils.exceptions.NetworkError: Aiohttp client throws an error: ServerDisconnectedError: Server disconnected
+2025-11-23 00:18:35,705 - [WARNING] - aiogram - (executor.py).start_polling(329) - Goodbye!
+2025-11-23 00:18:49,002 - [INFO] - __main__ - (main.py).main(322) - 🔄 Запуск бота
+2025-11-23 00:18:49,314 - [INFO] - aiogram - (executor.py)._welcome(362) - Bot: тестайс [@testaicebot]
+2025-11-23 00:18:49,533 - [WARNING] - aiogram - (executor.py)._skip_updates(358) - Updates were skipped successfully.
+2025-11-23 00:18:49,533 - [INFO] - __main__ - (main.py).on_startup(231) - 🚀 Запуск бота...
+2025-11-23 00:18:49,533 - [INFO] - __main__ - (main.py).on_startup(234) - 📊 Настройка базы данных...
+2025-11-23 00:18:49,589 - [INFO] - __main__ - (main.py).setup_database(92) - ✅ Все таблицы базы данных созданы
+2025-11-23 00:18:49,590 - [INFO] - __main__ - (main.py).setup_database(100) - ✅ Подключение к базе данных установлено
+2025-11-23 00:18:49,590 - [INFO] - __main__ - (main.py).on_startup(238) - 🧹 Очистка старых данных...
+2025-11-23 00:18:49,610 - [INFO] - __main__ - (main.py).cleanup_old_limits(126) - ✅ Старые записи лимитов не найдены
+2025-11-23 00:18:49,610 - [INFO] - __main__ - (main.py).on_startup(242) - 📝 Регистрация обработчиков...
+2025-11-23 00:18:49,610 - [INFO] - __main__ - (main.py).register_all_handlers(139) - 🔄 Регистрация обработчиков...
+2025-11-23 00:18:49,631 - [INFO] - root - (start.py).register_start_handler(761) - ✅ Стартовые обработчики зарегистрированы
+2025-11-23 00:18:49,631 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ start обработчики зарегистрированы
+2025-11-23 00:18:49,633 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ admin обработчики зарегистрированы
+2025-11-23 00:18:49,633 - [INFO] - root - (shop.py).register_shop_handlers(483) - ✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)
+2025-11-23 00:18:49,633 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ shop обработчики зарегистрированы
+2025-11-23 00:18:49,645 - [INFO] - handlers.donate.bonus - (bonus.py)._init_bonus_table(76) - ✅ Таблица user_bonuses создана/проверена
+2025-11-23 00:18:49,646 - [INFO] - root - (handlers.py).register_donate_handlers(435) - ✅ Донат обработчики зарегистрированы (автоматические бонусы)
+2025-11-23 00:18:49,646 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ donate обработчики зарегистрированы
+2025-11-23 00:18:49,647 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_main_menu
+2025-11-23 00:18:49,648 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_admin_users_list
+2025-11-23 00:18:49,648 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ callback обработчики зарегистрированы
+2025-11-23 00:18:49,649 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ reference обработчики зарегистрированы
+2025-11-23 00:18:49,651 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ transfer обработчики зарегистрированы
+2025-11-23 00:18:49,651 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ history_service обработчики зарегистрированы
+2025-11-23 00:18:49,653 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ record обработчики зарегистрированы
+2025-11-23 00:18:49,653 - [INFO] - venv - (gifts.py).register_gift_handlers(983) - ✅ Обработчики подарков зарегистрированы с группировкой подарков
+2025-11-23 00:18:49,653 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ gifts обработчики зарегистрированы
+2025-11-23 00:18:49,655 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ marriage_handler обработчики зарегистрированы
+2025-11-23 00:18:49,656 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ roulette обработчики зарегистрированы
+2025-11-23 00:18:49,658 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ police обработчики зарегистрированы
+2025-11-23 00:18:49,661 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ thief обработчики зарегистрированы
+2025-11-23 00:18:49,663 - [INFO] - root - (dice_game.py).register_dice_handlers(399) - ✅ Игра 'Кубик' зарегистрирована (работает везде)
+2025-11-23 00:18:49,663 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ dice_game обработчики зарегистрированы
+2025-11-23 00:18:49,664 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(863) - ✅ Обработчики 'бот ищи' зарегистрированы (ТОЧНЫЕ команды)
+2025-11-23 00:18:49,665 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(864) - 📝 Сбор данных включен для 20 команд
+2025-11-23 00:18:49,665 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(865) - 🛡️ ID товаров защиты: [4]
+2025-11-23 00:18:49,665 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ bot_search_handler обработчики зарегистрированы
+2025-11-23 00:18:49,666 - [INFO] - handlers.chat_handlers - (chat_handlers.py).register_chat_handlers(126) - ✅ Chat handlers registered
+2025-11-23 00:18:49,666 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ chat_handlers обработчики зарегистрированы
+2025-11-23 00:18:49,667 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).register_bot_stop_handlers(482) - ✅ Обработчики 'бот стоп' зарегистрированы (с исправленной логикой и защитой)
+2025-11-23 00:18:49,667 - [INFO] - __main__ - (main.py).register_all_handlers(156) - ✅ bot_stop_handler обработчики зарегистрированы
+2025-11-23 00:18:49,667 - [INFO] - __main__ - (main.py).register_all_handlers(163) - ✅ Все обработчики зарегистрированы. Всего: 18
+2025-11-23 00:18:49,667 - [INFO] - venv - (gifts.py).ensure_gifts_on_startup(949) - 🎁 Проверка подарков в базе данных...
+2025-11-23 00:18:49,674 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Кольцо
+2025-11-23 00:18:49,676 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Бриллиант
+2025-11-23 00:18:49,677 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Тигр
+2025-11-23 00:18:49,678 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Панда
+2025-11-23 00:18:49,680 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Цыплёнок
+2025-11-23 00:18:49,681 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Чебурашка
+2025-11-23 00:18:49,683 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Кулон
+2025-11-23 00:18:49,684 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Лимон
+2025-11-23 00:18:49,686 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Шаурма
+2025-11-23 00:18:49,687 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Хуй
+2025-11-23 00:18:49,688 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Лев
+2025-11-23 00:18:49,689 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Роза
+2025-11-23 00:18:49,690 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Шоколад
+2025-11-23 00:18:49,692 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Сердце
+2025-11-23 00:18:49,693 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Подарок
+2025-11-23 00:18:49,694 - [INFO] - venv - (gifts.py).ensure_gifts_exist(240) - ✅ Создан подарок: Мишка
+2025-11-23 00:18:49,694 - [INFO] - venv - (gifts.py).ensure_gifts_exist(244) - ✅ Создано 16 подарков
+2025-11-23 00:18:49,694 - [INFO] - __main__ - (main.py).on_startup(250) - ⏰ Запуск задач очистки...
+2025-11-23 00:18:49,695 - [INFO] - __main__ - (main.py).start_cleanup_tasks(186) - ✅ Планировщик очистки БД запущен
+2025-11-23 00:18:49,695 - [INFO] - __main__ - (main.py).start_cleanup_tasks(191) - ✅ Задачи проверки мутов/банов запущены
+2025-11-23 00:18:49,695 - [INFO] - handlers.admin.mute_ban - (mute_ban.py).restore_mutes_after_restart(235) - ⏭️ Восстановление мутов после перезапуска (не реализовано)
+2025-11-23 00:18:49,695 - [INFO] - __main__ - (main.py).start_cleanup_tasks(195) - ✅ Активные муты восстановлены после перезапуска
+2025-11-23 00:18:49,695 - [INFO] - __main__ - (main.py).on_startup(254) - 💰 Запуск планировщика донат-задач...
+2025-11-23 00:18:49,698 - [INFO] - handlers.donate.bonus - (bonus.py)._init_bonus_table(76) - ✅ Таблица user_bonuses создана/проверена
+2025-11-23 00:18:49,698 - [INFO] - __main__ - (main.py).start_donate_scheduler(210) - ✅ Планировщик донат-задач запущен
+2025-11-23 00:18:49,698 - [INFO] - __main__ - (main.py).on_startup(257) - ✅ Бот успешно запущен
+2025-11-23 00:18:49,698 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(38) - 🔄 Планировщик очистки запущен
+2025-11-23 00:18:49,698 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(54) - ⏰ Следующая очистка через 85270 секунд (23.7 часов)
+2025-11-23 00:18:49,698 - [INFO] - handlers.donate.scheduler - (scheduler.py).start_scheduler(24) - 🚀 Запуск планировщика донат-задач
+2025-11-23 00:18:49,698 - [INFO] - handlers.donate.scheduler - (scheduler.py)._process_daily_tasks(47) - 📅 Выполнение ежедневных задач
+2025-11-23 00:18:49,700 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(131) - 🔍 Начинаем обработку 0 пользователей
+2025-11-23 00:18:49,700 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(219) - 🎯 Автоматические бонусы обработаны: 0 пользователей, 0 получили бонусы
+2025-11-23 00:18:49,701 - [INFO] - handlers.donate.scheduler - (scheduler.py)._process_daily_tasks(51) - 🎁 Начислено автоматических бонусов: 0
+2025-11-23 00:18:49,701 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(235) - 🔍 Начинаем проверку истекающих привилегий...
+2025-11-23 00:18:49,702 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(262) - 📊 Найдено истекающих через 1 день: 0
+2025-11-23 00:18:49,702 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(263) - 📊 Найдено уже истекших: 0
+2025-11-23 00:18:49,703 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-23 00:19:15,603 - [INFO] - __main__ - (main.py).signal_handler(314) - 📞 Получен сигнал 2. Завершение работы...
+2025-11-23 00:19:15,603 - [INFO] - __main__ - (main.py).on_shutdown(262) - 🛑 Завершение работы бота...
+2025-11-23 00:19:15,603 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(147) - 🛑 Остановка планировщика очистки...
+2025-11-23 00:19:15,603 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).stop(156) - ✅ Планировщик очистки остановлен
+2025-11-23 00:19:15,603 - [INFO] - __main__ - (main.py).on_shutdown(270) - ✅ Планировщик очистки остановлен
+2025-11-23 00:19:15,603 - [INFO] - __main__ - (main.py).on_shutdown(279) - ✅ Задачи мутов/банов остановлены
+2025-11-23 00:19:15,603 - [INFO] - handlers.donate.scheduler - (scheduler.py).stop_scheduler(42) - 🛑 Остановка планировщика донат-задач
+2025-11-23 00:19:15,603 - [INFO] - __main__ - (main.py).stop_donate_scheduler(224) - ✅ Планировщик донат-задач остановлен
+2025-11-23 00:19:15,604 - [INFO] - __main__ - (main.py).on_shutdown(290) - ✅ Соединения с БД закрыты
+2025-11-23 00:19:15,604 - [INFO] - __main__ - (main.py).on_shutdown(298) - ✅ Хранилище диспетчера закрыто
+2025-11-23 00:19:15,604 - [INFO] - __main__ - (main.py).on_shutdown(305) - ✅ Бот остановлен
+2025-11-23 00:19:15,604 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).stop_polling(433) - Stop polling...
+2025-11-23 00:19:15,604 - [ERROR] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(390) - Cause exception while getting updates.
+Traceback (most recent call last):
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\api.py", line 139, in make_request
+    async with session.post(url, data=req, **kwargs) as response:
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client.py", line 1488, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client.py", line 770, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client.py", line 748, in _connect_and_send_request
+    await resp.start(conn)
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\client_reqrep.py", line 532, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiohttp\streams.py", line 672, in read
+    await self._waiter
+aiohttp.client_exceptions.ServerDisconnectedError: Server disconnected
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 381, in start_polling
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\bot.py", line 110, in get_updates
+    result = await self.request(api.Methods.GET_UPDATES, payload)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\base.py", line 236, in request
+    return await api.make_request(await self.get_session(), self.server, self.__token, method, data, files,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\bekak\PycharmProjects\Bek_32-2_hw-master\.venv\Lib\site-packages\aiogram\bot\api.py", line 142, in make_request
+    raise exceptions.NetworkError(f"aiohttp client throws an error: {e.__class__.__name__}: {e}")
+aiogram.utils.exceptions.NetworkError: Aiohttp client throws an error: ServerDisconnectedError: Server disconnected
+2025-11-23 00:19:15,607 - [WARNING] - aiogram - (executor.py).start_polling(329) - Goodbye!
+2025-11-23 00:19:16,757 - [INFO] - __main__ - (main.py).main(324) - 🔄 Запуск бота
+2025-11-23 00:19:17,076 - [INFO] - aiogram - (executor.py)._welcome(362) - Bot: тестайс [@testaicebot]
+2025-11-23 00:19:17,279 - [WARNING] - aiogram - (executor.py)._skip_updates(358) - Updates were skipped successfully.
+2025-11-23 00:19:17,279 - [INFO] - __main__ - (main.py).on_startup(232) - 🚀 Запуск бота...
+2025-11-23 00:19:17,279 - [INFO] - __main__ - (main.py).on_startup(236) - 📊 Настройка базы данных...
+2025-11-23 00:19:17,334 - [INFO] - __main__ - (main.py).setup_database(93) - ✅ Все таблицы базы данных созданы
+2025-11-23 00:19:17,335 - [INFO] - __main__ - (main.py).setup_database(101) - ✅ Подключение к базе данных установлено
+2025-11-23 00:19:17,335 - [INFO] - __main__ - (main.py).on_startup(240) - 🧹 Очистка старых данных...
+2025-11-23 00:19:17,352 - [INFO] - __main__ - (main.py).cleanup_old_limits(127) - ✅ Старые записи лимитов не найдены
+2025-11-23 00:19:17,352 - [INFO] - __main__ - (main.py).on_startup(244) - 📝 Регистрация обработчиков...
+2025-11-23 00:19:17,352 - [INFO] - __main__ - (main.py).register_all_handlers(140) - 🔄 Регистрация обработчиков...
+2025-11-23 00:19:17,371 - [INFO] - root - (start.py).register_start_handler(761) - ✅ Стартовые обработчики зарегистрированы
+2025-11-23 00:19:17,371 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ start обработчики зарегистрированы
+2025-11-23 00:19:17,373 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ admin обработчики зарегистрированы
+2025-11-23 00:19:17,373 - [INFO] - root - (shop.py).register_shop_handlers(483) - ✅ Магазин обработчики зарегистрированы (с ГЛОБАЛЬНОЙ защитой)
+2025-11-23 00:19:17,373 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ shop обработчики зарегистрированы
+2025-11-23 00:19:17,382 - [INFO] - handlers.donate.bonus - (bonus.py)._init_bonus_table(76) - ✅ Таблица user_bonuses создана/проверена
+2025-11-23 00:19:17,383 - [INFO] - root - (handlers.py).register_donate_handlers(435) - ✅ Донат обработчики зарегистрированы (автоматические бонусы)
+2025-11-23 00:19:17,383 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ donate обработчики зарегистрированы
+2025-11-23 00:19:17,384 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_main_menu
+2025-11-23 00:19:17,384 - [INFO] - handlers.callback - (callback.py)._register_handler(94) - Successfully registered callback handler: handle_admin_users_list
+2025-11-23 00:19:17,384 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ callback обработчики зарегистрированы
+2025-11-23 00:19:17,384 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ reference обработчики зарегистрированы
+2025-11-23 00:19:17,386 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ transfer обработчики зарегистрированы
+2025-11-23 00:19:17,386 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ history_service обработчики зарегистрированы
+2025-11-23 00:19:17,387 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ record обработчики зарегистрированы
+2025-11-23 00:19:17,388 - [INFO] - venv - (gifts.py).register_gift_handlers(983) - ✅ Обработчики подарков зарегистрированы с группировкой подарков
+2025-11-23 00:19:17,388 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ gifts обработчики зарегистрированы
+2025-11-23 00:19:17,389 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ marriage_handler обработчики зарегистрированы
+2025-11-23 00:19:17,390 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ roulette обработчики зарегистрированы
+2025-11-23 00:19:17,392 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ police обработчики зарегистрированы
+2025-11-23 00:19:17,393 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ thief обработчики зарегистрированы
+2025-11-23 00:19:17,394 - [INFO] - root - (dice_game.py).register_dice_handlers(399) - ✅ Игра 'Кубик' зарегистрирована (работает везде)
+2025-11-23 00:19:17,394 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ dice_game обработчики зарегистрированы
+2025-11-23 00:19:17,395 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(863) - ✅ Обработчики 'бот ищи' зарегистрированы (ТОЧНЫЕ команды)
+2025-11-23 00:19:17,395 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(864) - 📝 Сбор данных включен для 20 команд
+2025-11-23 00:19:17,396 - [INFO] - handlers.bot_search_handler - (bot_search_handler.py).register_bot_search_handlers(865) - 🛡️ ID товаров защиты: [4]
+2025-11-23 00:19:17,396 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ bot_search_handler обработчики зарегистрированы
+2025-11-23 00:19:17,396 - [INFO] - handlers.chat_handlers - (chat_handlers.py).register_chat_handlers(126) - ✅ Chat handlers registered
+2025-11-23 00:19:17,396 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ chat_handlers обработчики зарегистрированы
+2025-11-23 00:19:17,397 - [INFO] - handlers.bot_stop_handler - (bot_stop_handler.py).register_bot_stop_handlers(482) - ✅ Обработчики 'бот стоп' зарегистрированы (с исправленной логикой и защитой)
+2025-11-23 00:19:17,397 - [INFO] - __main__ - (main.py).register_all_handlers(157) - ✅ bot_stop_handler обработчики зарегистрированы
+2025-11-23 00:19:17,397 - [INFO] - __main__ - (main.py).register_all_handlers(164) - ✅ Все обработчики зарегистрированы. Всего: 18
+2025-11-23 00:19:17,397 - [INFO] - venv - (gifts.py).ensure_gifts_on_startup(949) - 🎁 Проверка подарков в базе данных...
+2025-11-23 00:19:17,400 - [INFO] - venv - (gifts.py).ensure_gifts_exist(246) - ✅ Все подарки уже существуют в базе
+2025-11-23 00:19:17,400 - [INFO] - __main__ - (main.py).on_startup(252) - ⏰ Запуск задач очистки...
+2025-11-23 00:19:17,401 - [INFO] - __main__ - (main.py).start_cleanup_tasks(187) - ✅ Планировщик очистки БД запущен
+2025-11-23 00:19:17,401 - [INFO] - __main__ - (main.py).start_cleanup_tasks(192) - ✅ Задачи проверки мутов/банов запущены
+2025-11-23 00:19:17,401 - [INFO] - handlers.admin.mute_ban - (mute_ban.py).restore_mutes_after_restart(235) - ⏭️ Восстановление мутов после перезапуска (не реализовано)
+2025-11-23 00:19:17,401 - [INFO] - __main__ - (main.py).start_cleanup_tasks(196) - ✅ Активные муты восстановлены после перезапуска
+2025-11-23 00:19:17,401 - [INFO] - __main__ - (main.py).on_startup(256) - 💰 Запуск планировщика донат-задач...
+2025-11-23 00:19:17,403 - [INFO] - handlers.donate.bonus - (bonus.py)._init_bonus_table(76) - ✅ Таблица user_bonuses создана/проверена
+2025-11-23 00:19:17,403 - [INFO] - __main__ - (main.py).start_donate_scheduler(211) - ✅ Планировщик донат-задач запущен
+2025-11-23 00:19:17,403 - [INFO] - __main__ - (main.py).on_startup(259) - ✅ Бот успешно запущен
+2025-11-23 00:19:17,403 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(38) - 🔄 Планировщик очистки запущен
+2025-11-23 00:19:17,403 - [INFO] - handlers.cleanup_scheduler - (cleanup_scheduler.py).start_daily_cleanup(54) - ⏰ Следующая очистка через 85243 секунд (23.7 часов)
+2025-11-23 00:19:17,403 - [INFO] - handlers.donate.scheduler - (scheduler.py).start_scheduler(24) - 🚀 Запуск планировщика донат-задач
+2025-11-23 00:19:17,403 - [INFO] - handlers.donate.scheduler - (scheduler.py)._process_daily_tasks(47) - 📅 Выполнение ежедневных задач
+2025-11-23 00:19:17,404 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(131) - 🔍 Начинаем обработку 0 пользователей
+2025-11-23 00:19:17,405 - [INFO] - handlers.donate.bonus - (bonus.py).process_automatic_bonuses(219) - 🎯 Автоматические бонусы обработаны: 0 пользователей, 0 получили бонусы
+2025-11-23 00:19:17,405 - [INFO] - handlers.donate.scheduler - (scheduler.py)._process_daily_tasks(51) - 🎁 Начислено автоматических бонусов: 0
+2025-11-23 00:19:17,405 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(235) - 🔍 Начинаем проверку истекающих привилегий...
+2025-11-23 00:19:17,406 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(262) - 📊 Найдено истекающих через 1 день: 0
+2025-11-23 00:19:17,406 - [INFO] - handlers.donate.bonus - (bonus.py).check_expiring_privileges(263) - 📊 Найдено уже истекших: 0
+2025-11-23 00:19:17,407 - [INFO] - aiogram.dispatcher.dispatcher - (dispatcher.py).start_polling(358) - Start polling.
+2025-11-23 00:20:09,576 - [INFO] - handlers.roulette_logs - (roulette_logs.py).add_game_log(37) - Добавлен лог рулетки для чата -1003333007164: 6⚫
+2025-11-23 00:20:09,695 - [INFO] - main - (handlers.py)._process_user_results(673) - DEBUG: user_id=7895562652, profit=-1000, min_win=0
+2025-11-23 00:20:09,830 - [INFO] - main - (validators.py).update_users_batch(77) - ✅ Пакетное обновление: 1 пользователей
+2025-11-23 00:21:06,612 - [INFO] - handlers.roulette_logs - (roulette_logs.py).add_game_log(37) - Добавлен лог рулетки для чата -1003333007164: 8⚫
+2025-11-23 00:21:06,787 - [INFO] - main - (handlers.py)._process_user_results(673) - DEBUG: user_id=7895562652, profit=-1000, min_win=-1000
+2025-11-23 00:21:07,282 - [INFO] - main - (validators.py).update_users_batch(77) - ✅ Пакетное обновление: 1 пользователей
