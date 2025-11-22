@@ -58,7 +58,9 @@ async def send_admin_action_notification(bot, user_id: int, action_type: str,
             notification_text += f"💳 Теперь на вашем балансе: <b>{format_number(new_balance)} монет</b>\n"
         # Добавляем информацию о привилегии если есть
         if privilege_info:
-            duration = f"{privilege_info['default_days']} дней" if privilege_info.get('extendable') else "навсегда"
+            # Используем реальное количество дней из privilege_info, если передано, иначе default_days
+            actual_days = privilege_info.get('actual_days', privilege_info.get('default_days', 30))
+            duration = f"{actual_days} дней" if privilege_info.get('extendable') else "навсегда"
             notification_text += f"🎁 <b>Привилегия: {privilege_info['name']}</b>\n"
             notification_text += f"⏰ Срок: {duration}\n"
         notification_text += "✨ <i>Спасибо за вашу активность!</i>"

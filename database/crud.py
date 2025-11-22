@@ -2171,16 +2171,54 @@ class DonateRepository:
 
         return purchase is not None and purchase.is_active()
 
+
     @staticmethod
     def get_user_active_purchases(db, user_id: int):
-        """Получает активные покупки пользователя"""
-        from database.models import DonatePurchase
+        """Получает активные покупки пользователя из таблицы user_purchases"""
+        from database.models import UserPurchase
+        from datetime import datetime
 
-        purchases = db.query(DonatePurchase).filter(
-            DonatePurchase.user_id == user_id
-        ).all()
+        try:
+            print(f"🔍 Ищем покупки пользователя {user_id} в user_purchases")
 
-        return [p for p in purchases if p.is_active()]
+            # Получаем ВСЕ покупки пользователя из user_purchases
+            purchases = db.query(UserPurchase).filter(
+                UserPurchase.user_id == user_id
+            ).all()
+
+            print(f"🔍 Найдено покупок в user_purchases: {len(purchases)}")
+
+            # Фильтруем активные покупки
+            active_purchases = []
+            current_time = datetime.now()
+
+            for purchase in purchases:
+                print(
+                    f"🔍 Проверяем покупку: ID={purchase.item_id}, Name={purchase.item_name}, Expires={purchase.expires_at}")
+
+                # Если expires_at = NULL или expires_at > текущего времени - покупка активна
+                if purchase.expires_at is None:
+                    print(f"✅ Покупка {purchase.item_id} активна (навсегда)")
+                    active_purchases.append(purchase)
+                elif purchase.expires_at > current_time:
+                    print(f"✅ Покупка {purchase.item_id} активна (до {purchase.expires_at})")
+                    active_purchases.append(purchase)
+                else:
+                    print(f"❌ Покупка {purchase.item_id} истекла")
+
+            print(f"✅ Всего активных покупок для {user_id}: {len(active_purchases)}")
+
+            # Логируем ID активных покупок
+            active_ids = [p.item_id for p in active_purchases]
+            print(f"📋 Активные ID: {active_ids}")
+
+            return active_purchases
+
+        except Exception as e:
+            print(f"❌ Критическая ошибка получения активных покупок: {e}")
+            return []
+
+
 
     @staticmethod
     def cleanup_expired_purchases(db):

@@ -537,13 +537,19 @@ class AdminHandler:
                     days if privilege["extendable"] else 0  # Для unlimit сохраняем 0
                 )
                 db.commit()
+
+                # ИСПРАВЛЕНИЕ: Создаем копию privilege с реальным количеством дней
+                privilege_with_days = privilege.copy()
+                privilege_with_days['actual_days'] = days
+
                 # Отправляем уведомление пользователю
                 await send_admin_action_notification(
                     message.bot,
                     user_id,
                     "privilege",
-                    privilege_info=privilege
+                    privilege_info=privilege_with_days  # ← ПЕРЕДАЕМ С РЕАЛЬНЫМИ ДНЯМИ
                 )
+
                 self.logger.info(f"Admin {message.from_user.id} gave {privilege['name']} to user {user_id}")
                 duration_text = f"{days} дней" if days > 0 else "навсегда"
                 response = (
@@ -560,6 +566,7 @@ class AdminHandler:
         except Exception as e:
             self.logger.error(f"Error in give_privilege: {e}")
             await message.answer("❌ Произошла ошибка при выдаче привилегии")
+
 
     async def remove_privilege(self, message: types.Message):
         """Отобрать привилегию у пользователя"""
@@ -674,11 +681,16 @@ class AdminHandler:
                     self.logger.info(
                         f"Admin {message.from_user.id} extended {privilege['name']} for user {user_id} by {days} days")
                     # Отправляем уведомление пользователю
+                    # ИСПРАВЛЕНИЕ: Создаем копию privilege с реальным количеством дней
+                    privilege_with_days = privilege.copy()
+                    privilege_with_days['actual_days'] = days
+
+                    # Отправляем уведомление пользователю
                     await send_admin_action_notification(
                         message.bot,
                         user_id,
                         "privilege",
-                        privilege_info=privilege
+                        privilege_info=privilege_with_days
                     )
                     response = (
                         f"✅ <b>Привилегия успешно продлена!</b>\n"
