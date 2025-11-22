@@ -125,7 +125,6 @@ async def send_admin_action_notification(bot, user_id: int, action_type: str,
                 # Также проверяем файлы в корне
                 root_files = list(project_root.glob("*.jpg")) + list(project_root.glob("*.png")) + list(
                     project_root.glob("*.jpeg"))
-                logger.warning(f"   📁 корень: {[f.name for f in root_files]}")
 
                 # Отправляем текстовое сообщение
                 logger.info("📝 Отправляем текстовое уведомление вместо фото")
